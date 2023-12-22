@@ -82,6 +82,15 @@ func (s *PostgresStore) createTables() error {
 }
 
 func (s *PostgresStore) CreateAccount(acc *Account) error {
+	check := (`
+	SELECT * FROM users
+	WHERE username = $1 OR email = $2`)
+	
+	exist := s.db.QueryRow(check, acc.UserName, acc.Email)
+	if exists := exist.Scan(); exists != sql.ErrNoRows {
+		return fmt.Errorf("username or email already exists, proceed to login in")
+	}
+	
 	query := (`
 	INSERT INTO users 
 	(username, email, encryptedpw, created)
@@ -223,4 +232,29 @@ func SeedData(s Database) *Account {
 	fmt.Printf("seeded database with: userID[%v], threadID[%v], postID[%v], commentID[%v]\n", acc.UserID, t.ThreadID, p.PostID, c.CommentID)
 
 	return acc
+}
+
+func (s *PostgresStore) GetAccountByUserID (userID int) (*Account, error) {
+	query := (`
+	SELECT * FROM users
+	WHERE userid = $1`)
+	row, err1 := s.db.Query(query, userID)
+
+	if err1 != nil {
+		return nil, err1
+	}
+
+	acc := new(Account)
+	err2 := row.Scan(
+		&acc.UserID,
+		&acc.UserName,
+		&acc.Email,
+		&acc.EncryptedPW,
+		&acc.Created)
+
+	if err2 != nil {
+		return nil, err2
+	}
+
+	return acc, nil
 }

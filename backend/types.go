@@ -7,7 +7,7 @@ import (
 )
 
 type Account struct {
-	UserID      int       `json:"useridx"`
+	UserID      int       `json:"userid"`
 	UserName    string    `json:"username"`
 	Email       string    `json:"email"`
 	EncryptedPW string    `json:"-"`
@@ -22,7 +22,7 @@ type LoginRequest struct {
 
 type LoginResponse struct {
 	UserID int    `json:"userid"`
-	Token  string `json:"token"`
+	Token  string `json:"token"` //jwt token
 }
 
 type CreateAccountRequest struct {
@@ -77,7 +77,7 @@ type Comment struct {
 
 type Database interface {
 	CreateAccount(*Account) (error) //check if account exists
-	//GetAccountByUserID(int) (*Account, error)
+	GetAccountByUserID(int) (*Account, error)
 	//GetAccountByAccNum(int) (*Account, error)
 	//UpdateAccount(*Account) error
 	//DeleteAccountByID(int) error

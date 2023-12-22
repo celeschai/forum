@@ -33,6 +33,12 @@ func (s *APIServer) Run() {
 }
 
 func (s *APIServer) handleLogin(w http.ResponseWriter, r *http.Request) error {
+	if r.Method != "POST" {
+		return fmt.Errorf("method not allowed %s", r.Method)
+	}
+	if !validateJWT(r.Header.Get("Set-Cookie")) {
+
+	}
 	//check header for cookies
 	return nil
 }
@@ -75,7 +81,7 @@ func (s *APIServer) handleComments(w http.ResponseWriter, r *http.Request) error
 //Helper functions
 func WriteJSON(w http.ResponseWriter, status int, v any) error { //add error so it is compatible with all function signatures
 	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:" + frontend)
-	w.Header().Add("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	return json.NewEncoder(w).Encode(v)
 }
