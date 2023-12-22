@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"log"
-	"math/rand"
+	//"math/rand"
 	"net/http"
 	"strconv"
-	"time"
+	//"time"
 
 	"github.com/gorilla/mux"
 )
@@ -18,14 +18,16 @@ func (s *APIServer) Run() {
 
 	router.HandleFunc("/login", makeHTTPHandleFunc(s.handleLogin))
 	router.HandleFunc("/signup", makeHTTPHandleFunc(s.handleSignup))
-	router.HandleFunc("/{userid}", makeHTTPHandleFunc(s.handleUser))
+	router.HandleFunc("/{accnum}", makeHTTPHandleFunc(s.handleUser))
 
-	router.HandleFunc("/feed", makeHTTPHandleFunc(s.handleFeed))
+	//router.HandleFunc("/feed", makeHTTPHandleFunc(s.handleFeed))
+	router.HandleFunc("/{tag}", makeHTTPHandleFunc(s.handleFilter))
+
 	router.HandleFunc("/{threadid}", makeHTTPHandleFunc(s.handleThreads))
 	router.HandleFunc("/{postid}", makeHTTPHandleFunc(s.handlePosts))
-	router.HandleFunc("/{commentid}", makeHTTPHandleFunc(s.handleComments)) //using POST for privacy - GET shows in history of browser
+	router.HandleFunc("/{commentid}", makeHTTPHandleFunc(s.handleComments)) 
 
-	log.Println("JSON API server running on port: ", s.listenAddr)
+	log.Println("JSON API server running on port", s.listenAddr)
 
 	http.ListenAndServe(s.listenAddr, router)
 }
@@ -45,7 +47,12 @@ func (s *APIServer) handleUser(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func (s *APIServer) handleFeed(w http.ResponseWriter, r *http.Request) error {
+// func (s *APIServer) handleFeed(w http.ResponseWriter, r *http.Request) error {
+// 	//check for JWT
+// 	return nil
+// }
+
+func (s *APIServer) handleFilter(w http.ResponseWriter, r *http.Request) error {
 	//check for JWT
 	return nil
 }
@@ -67,7 +74,7 @@ func (s *APIServer) handleComments(w http.ResponseWriter, r *http.Request) error
 
 //Helper functions
 func WriteJSON(w http.ResponseWriter, status int, v any) error { //add error so it is compatible with all function signatures
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:" + frontend)
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(status)
 	return json.NewEncoder(w).Encode(v)

@@ -7,22 +7,21 @@ import (
 )
 
 type Account struct {
-	//AccNum      int       `json:"accnum"`
+	UserID      int       `json:"useridx"`
 	UserName    string    `json:"username"`
 	Email       string    `json:"email"`
-	UserID      int64     `json:"userid"`
 	EncryptedPW string    `json:"-"`
-	CreatedAt   time.Time `json:"createdAt"`
+	Created     time.Time `json:"created"`
 }
 
-// http requests and responses 
+// http requests and responses
 type LoginRequest struct {
-	UserID   int64  `json:"userid"`
+	UserID   int    `json:"userid"`
 	Password string `json:"password"`
 }
 
 type LoginResponse struct {
-	UserID int64  `json:"userid"`
+	UserID int    `json:"userid"`
 	Token  string `json:"token"`
 }
 
@@ -46,55 +45,60 @@ type ApiError struct {
 
 // content
 type Thread struct {
-	ThreadID int64  `json:"threadid"`
-	Title    string `json:"title"`
-	UserID   int64  `json:"userid"`
-	Tag1     string `json:"tag1"`
-	Tag2     string `json:"tag2"`
+	ThreadID int       `json:"threadid"`
+	Title    string    `json:"title"`
+	UserID   int       `json:"userid"`
+	Tag1     string    `json:"tag1"`
+	Tag2     string    `json:"tag2"`
+	Created  time.Time `json:"created"`
 }
 
 type Post struct {
-	PostID   int64     `json:"postid"`
-	ThreadID int64     `json:"threadid"`
+	PostID   int       `json:"postid"`
+	ThreadID int       `json:"threadid"`
 	Title    string    `json:"title"`
-	UserID   int64     `json:"userid"`
+	UserID   int       `json:"userid"`
 	Content  string    `json:"content"`
-	Date     time.Time `json:"date"`
+	Created  time.Time `json:"created"`
 }
 
 type Comment struct {
-	CommentID int64     `json:"commentid"`
-	PostID    int64     `json:"postid"`
-	//ThreadID  int64     `json:"threadid"`
-	Title     string    `json:"title"`
-	UserID    int64     `json:"userid"`
+	CommentID int       `json:"commentid"`
+	PostID    int       `json:"postid"`
+	//ThreadID  int       `json:"threadid"`
+	//Title     string    `json:"title"`
+	UserID    int       `json:"userid"`
 	Content   string    `json:"content"`
-	Date      time.Time `json:"date"`
+	Created   time.Time `json:"created"`
 }
 
-// database
+// // database
+// type method string
+
 type Database interface {
-	CreateAccount(*Account) error
-	GetAccountByUserID(int64) (*Account, error)
-	//GetAccountByAccNum(int) (*Account, error)      
+	CreateAccount(*Account) (error) //check if account exists
+	//GetAccountByUserID(int) (*Account, error)
+	//GetAccountByAccNum(int) (*Account, error)
 	//UpdateAccount(*Account) error
 	//DeleteAccountByID(int) error
 
-	NewThread(*Thread) error
-	DeleteThread(*Thread) error
-	GetPosts() ([]*Post, error)
+	CreateThread(*Thread) (error)
+	// CreateThread(*Thread) error
+	// DeleteThread(*Thread) error - maybe cannot delete threads
+	//GetPosts() ([]*Post, error)
 
-	NewPost(*Post)
-	DeletePost(*Post) error
-	EditPost(*Post) error
-	GetComments() ([]*Comment, error)
+	//storePosts(*Post, method) error
+	CreatePost(*Post) (error)
+	// DeletePost(*Post) error
+	// EditPost(*Post) error +++
+	//GetComments() ([]*Comment, error)
 
-	NewComment(*Comment) error
-	DeleteComment(*Comment) error
-	EditComment(*Comment) error
+	//storeComments(*Comment, method) error
+	CreateComment(*Comment) (error)
+	// DeleteComment(*Comment) error
+	// EditComment(*Comment) error +++
 }
 
-// docker run --name postgres -e POSTGRES_PASSWORD=winter -p 5432:5432 -d postgres
 // check connection: nc -vz localhost 5432
 type PostgresStore struct {
 	db *sql.DB
