@@ -12,8 +12,9 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { redirect } from "react-router-dom";
-import port from "./App";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import hosturl from "./App";
 
 
 function Copyright(props: any) {
@@ -29,33 +30,35 @@ function Copyright(props: any) {
   );
 }
 
-export function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+function HandleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const data = { email: form.get('email'), password: form.get('password') };
-
-    fetch('http://localhost:' + port + '/login', 
+//abstract response 
+    fetch(hosturl + '/login', 
     {
       method: 'POST',
       headers: { "Content-Type": "application/json" },
       credentials: 'include',
       body: JSON.stringify(data),
     })
-    .then((response) => response.json())
-    .then((stat) => {
-        console.log(stat.resp);
-        if (stat.status === "success") {
-            return redirect("/feed");
-        } else {
-            //show error message in red to user
-        }
-    })
-}
+    .then((response) => {
+        const stat = response.json()
+        .then((stat) => {
+          if (response.status === 200) {
+            window.location.href = "/feed";
+          } else {
+            console.log(stat.resp);
+          }
+        });})} 
 
 // TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
 
 export default function SignIn() {
+
+  
+
   return (
     <ThemeProvider theme={defaultTheme}>
       <Container component="main" maxWidth="xs">
@@ -74,7 +77,7 @@ export default function SignIn() {
           <Typography component="h1" variant="h5">
             Sign in
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+          <Box component="form" onSubmit={HandleSubmit} noValidate sx={{ mt: 1 }}>
             <TextField
               margin="normal"
               required
@@ -103,14 +106,13 @@ export default function SignIn() {
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-            >
+              sx={{ mt: 3, mb: 2 }}>
               Sign In
             </Button>
             <Grid container>
               <Grid item xs>
                 <Link href="#" variant="body2">
-                  Forgot password?
+                 
                 </Link>
               </Grid>
               <Grid item>

@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
+	//"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"golang.org/x/crypto/bcrypt"
+	//"golang.org/x/tools/go/analysis/passes/nilfunc"
 )
 
 func (s *APIServer) Run() {
@@ -20,7 +21,7 @@ func (s *APIServer) Run() {
 	router.HandleFunc("/account/{accnum}", makeHTTPHandleFunc(s.handleUser))
 
 	//router.HandleFunc("/feed", makeHTTPHandleFunc(s.handleFeed))
-	router.HandleFunc("/feed/{tag}", makeHTTPHandleFunc(s.handleFeed))
+	router.HandleFunc("/feed/latest/{page}", makeHTTPHandleFunc(s.handleLatestFeed))
 
 	router.HandleFunc("/thread/{threadid}", makeHTTPHandleFunc(s.handleThreads))
 	router.HandleFunc("/post/{postid}", makeHTTPHandleFunc(s.handlePosts))
@@ -29,7 +30,7 @@ func (s *APIServer) Run() {
 	log.Println("JSON API server running on port", s.listenAddr)
 
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"http://localhost:" + frontend},
+		AllowedOrigins: []string{"http://localhost:" + frontend + "*"},
 		AllowCredentials: true,
 		Debug: true,
 	})
@@ -84,9 +85,18 @@ func (s *APIServer) handleUser(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func (s *APIServer) handleFeed(w http.ResponseWriter, r *http.Request) error {
-	//check for JWT
-	return nil
+func (s *APIServer) handleLatestFeed(w http.ResponseWriter, r *http.Request) error {
+	err := JWTAuth(w, r, s.database)
+	if err != nil {
+		return WriteJSON(w, http.StatusUnauthorized, LoginResponse{Resp: err.Error()})
+	}
+	
+	threads, err := s.database.GetLatestThreads(0)
+	if err != nil {
+		return err
+	}
+
+	return WriteJSON(w, http.StatusOK, threads)
 }
 
 func (s *APIServer) handleFilter(w http.ResponseWriter, r *http.Request) error {
@@ -127,13 +137,11 @@ func makeHTTPHandleFunc(f ApiFunc) http.HandlerFunc {
 	}
 }
 
-func getID(r *http.Request, idtype string) (int, error) {
-	idStr := mux.Vars(r)[idtype]
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		return id, fmt.Errorf("invalid id given %s", idStr)
-	}
-	return id, nil
+func getPath(r *http.Request, pathInput string) (string, error) {
+	inputStr := mux.Vars(r)[pathInput]
+	
+	
+	return inputStr, nil
 }
 
 func (a *Account) ValidatePassword(pw string) bool {

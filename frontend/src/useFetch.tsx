@@ -1,14 +1,8 @@
 import { useState, useEffect } from 'react';
 
-export type writingType = {
-    id: number,
-    title: string,
-    content: string,
-    username: string,
-}
 
 const useFetch = (url: string) => {
-  const [data, setData] = useState<Array<writingType>|null>(null);
+  const [data, setData] = useState<Array<JSON>|null>(null);
   const [isPending, setIsPending] = useState<boolean>(true);
   const [error, setError] = useState<any|null>(null);
 
@@ -31,6 +25,7 @@ const useFetch = (url: string) => {
       })
       .catch(err => {
         if (err.name === 'AbortError') {
+          return new Response
           console.log('fetch aborted')
         } else {
           // auto catches network / connection error

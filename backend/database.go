@@ -9,11 +9,10 @@ import (
 )
 
 // docker run --name forum -e POSTGRES_USER=forumadmin -e POSTGRES_PASSWORD=gossiping -e POSTGRES_DB=forum -p 5432:5432 -d postgres
-// test: docker run --name test -e POSTGRES_USER=test -e POSTGRES_PASSWORD=test -e POSTGRES_DB=test -p 5434:5433 -d postgres
 
 func NewPostgressStore() (*PostgresStore, error) {
-	connStr := "user=forumadmin dbname=forum password=gossiping sslmode=disable" //change pw in command then here
-	// connStr := "port=5433 user=test dbname=test password=test sslmode=disable"
+	connStr := "user=forumadmin dbname=forum password=gossiping sslmode=disable" 
+
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return nil, err
@@ -195,6 +194,31 @@ func (s *PostgresStore) CreateComment(c *Comment) error {
 	return retrieveID(row, &c.CommentID)
 }
 
+func (s *PostgresStore) GetLatestThreads(pg int)([]*Thread, error) {
+	query := (`
+	SELECT * FROM threads
+	ORDER BY created DESC
+	LIMIT 10
+	OFFSET (10*$1)
+	`)
+
+	rows, err := s.db.Query(query, pg)
+	if err != nil {
+		return nil, err
+	}
+
+	threads := []*Thread{}
+	for rows.Next() {
+		t, err := ScanThread(rows)
+		if err != nil {
+			return nil, err
+		}
+		threads = append(threads, t)
+	}
+
+	return threads, nil
+}
+
 // helpers
 func retrieveID(r *sql.Rows, mem any) error {
 	for r.Next() {
@@ -248,6 +272,17 @@ func ScanAccount(row *sql.Rows) (*Account, error) {
 		&acc.EncryptedPW,
 		&acc.Created)
 	return acc, err
+}
+
+func ScanThread(row *sql.Rows) (*Thread, error) {
+	t := new(Thread)
+	err := row.Scan(
+		&t.ThreadID,
+		&t.Title,
+		&t.UserName,
+		&t.Tag,
+		&t.Created)
+	return t, err
 }
 
 // seeding database

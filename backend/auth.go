@@ -37,7 +37,8 @@ func JWTAuth(w http.ResponseWriter, r *http.Request, s Database) error {
 	if claims["userName"] != acc.UserName || claims["userCreated"] != acc.Created {
 		return err
 	}
-
+	
+	fmt.Println("JWT Authenticated")
 	return nil
 }
 
@@ -60,9 +61,9 @@ func createJWT(acc *Account) (string, error) {
 		"userCreated": acc.Created,
 	} //std jwt.Claim changes it to float64
 
-	//jwtSecret := os.Getenv("JWT_SECRET")
+	jwtSecret := os.Getenv("JWT_SECRET")
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
-	return token.SignedString([]byte("jwtSecret"))
+	return token.SignedString([]byte(jwtSecret))
 }
 
 func setCookie(w http.ResponseWriter, r *http.Request, name, value string) {

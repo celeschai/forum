@@ -46,8 +46,7 @@ type Thread struct {
 	ThreadID int       `json:"id"`
 	Title    string    `json:"title"`
 	UserName string    `json:"username"`
-	Tg       string    `json:"tag1"`
-	Tag      string    `json:"tag2"`
+	Tag      string    `json:"tag"`
 	Created  time.Time `json:"created"`
 }
 
@@ -80,6 +79,7 @@ type Database interface {
 	//UpdateAccount(*Account) error
 	//DeleteAccountByID(int) error
 
+	GetLatestThreads(int) ([]*Thread, error)
 	CreateThread(*Thread) error
 	// CreateThread(*Thread) error
 	// DeleteThread(*Thread) error - maybe cannot delete threads

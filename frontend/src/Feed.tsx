@@ -1,11 +1,18 @@
-import { useNavigate, useParams } from "react-router-dom";
 import useFetch from "./useFetch";
-import port from "./App";
+import hosturl from "./App";
 import Display from "./Display";
 
+type writingType = {
+    id: number,
+    title: string,
+    username: string,
+    content: string,
+    created_at: Date,
+}
+
+
 const Feed = () => {
-    //const { tag } = useParams();
-    const url: string = 'http://localhost:' + port + '/feed';
+    const url: string = hosturl + '/feed/latest/0';
     const { data, error, isPending } = useFetch(url);
 
     return (

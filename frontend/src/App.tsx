@@ -10,7 +10,7 @@ import Account from './Account';
 import NewPost from './NewPost';
 import NewComment from './NewComment';
 
-export const port: string = "2999"; 
+export const hosturl: string = "http://localhost:2999"; 
 
 function App() {
   

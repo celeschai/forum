@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { writingType } from "./useFetch";
 import { useNavigate } from "react-router-dom";
 import { Button } from '@mui/base';
  
@@ -10,7 +9,7 @@ import { Button } from '@mui/base';
 //     username: string,
 // }
 
-const Display = ({list}: {list: Array<writingType>}) => {
+const Display = ({list}: {list: Array<>}) => {
     const navigate = useNavigate();
 
     return (

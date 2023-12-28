@@ -1,6 +1,6 @@
 import { FormEvent, useState } from "react";
 import { redirect } from "react-router-dom";
-import { port } from "./App";
+import { hosturl } from "./App";
 
 const NewComment = () => {
   const [title, setTitle] = useState('');
@@ -16,7 +16,7 @@ const NewComment = () => {
       tag: tag, 
     };
 
-    fetch("http://localhost:" + port + "/new/comment", {
+    fetch("http://localhost:" + hosturl + "/new/comment", {
       method: 'POST',
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
