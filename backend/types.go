@@ -7,7 +7,6 @@ import (
 )
 
 type Account struct {
-	UserID      int       `json:"userid"`
 	UserName    string    `json:"username"`
 	Email       string    `json:"email"`
 	EncryptedPW string    `json:"-"`
@@ -16,13 +15,12 @@ type Account struct {
 
 // http requests and responses
 type LoginRequest struct {
-	UserID   int    `json:"userid"`
+	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
 type LoginResponse struct {
-	UserID int    `json:"userid"`
-	Token  string `json:"token"` //jwt token
+	Resp any `json:"resp"`
 }
 
 type CreateAccountRequest struct {
@@ -45,56 +43,56 @@ type ApiError struct {
 
 // content
 type Thread struct {
-	ThreadID int       `json:"threadid"`
+	ThreadID int       `json:"id"`
 	Title    string    `json:"title"`
-	UserID   int       `json:"userid"`
-	Tag1     string    `json:"tag1"`
-	Tag2     string    `json:"tag2"`
+	UserName string    `json:"username"`
+	Tg       string    `json:"tag1"`
+	Tag      string    `json:"tag2"`
 	Created  time.Time `json:"created"`
 }
 
 type Post struct {
-	PostID   int       `json:"postid"`
+	PostID   int       `json:"id"`
 	ThreadID int       `json:"threadid"`
 	Title    string    `json:"title"`
-	UserID   int       `json:"userid"`
+	UserName string    `json:"username"`
 	Content  string    `json:"content"`
 	Created  time.Time `json:"created"`
 }
 
 type Comment struct {
-	CommentID int       `json:"commentid"`
-	PostID    int       `json:"postid"`
+	CommentID int `json:"id"`
+	PostID    int `json:"postid"`
 	//ThreadID  int       `json:"threadid"`
 	//Title     string    `json:"title"`
-	UserID    int       `json:"userid"`
-	Content   string    `json:"content"`
-	Created   time.Time `json:"created"`
+	UserName string    `json:"username"`
+	Content  string    `json:"content"`
+	Created  time.Time `json:"created"`
 }
 
 // // database
 // type method string
 
 type Database interface {
-	CreateAccount(*Account) (error) //check if account exists
-	GetAccountByUserID(int) (*Account, error)
-	//GetAccountByAccNum(int) (*Account, error)
+	CreateAccount(*Account) error //check if account exists
+	GetAccountByUserName(string) (*Account, error)
+	GetAccountByEmail(string) (*Account, error)
 	//UpdateAccount(*Account) error
 	//DeleteAccountByID(int) error
 
-	CreateThread(*Thread) (error)
+	CreateThread(*Thread) error
 	// CreateThread(*Thread) error
 	// DeleteThread(*Thread) error - maybe cannot delete threads
 	//GetPosts() ([]*Post, error)
 
 	//storePosts(*Post, method) error
-	CreatePost(*Post) (error)
+	CreatePost(*Post) error
 	// DeletePost(*Post) error
 	// EditPost(*Post) error +++
 	//GetComments() ([]*Comment, error)
 
 	//storeComments(*Comment, method) error
-	CreateComment(*Comment) (error)
+	CreateComment(*Comment) error
 	// DeleteComment(*Comment) error
 	// EditComment(*Comment) error +++
 }

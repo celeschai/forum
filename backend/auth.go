@@ -3,46 +3,43 @@ package main
 import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
-	"log"
 	"net/http"
-	"os"
-	"strconv"
-	"time"
-)
+	"os")
 
-// func withJWTAuth(handlerFunc http.HandlerFunc, s Database) http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
 func JWTAuth(w http.ResponseWriter, r *http.Request, s Database) error {
-		fmt.Println("calling JWT auth middleware")
+	fmt.Println("calling JWT auth middleware")
 
-		//Get returns "" if not found 
-		tokenString := r.Header.Get("jwtToken") 
-		token, err := validateJWT(tokenString)
-		switch {
-			case err != nil: 
-				return permissiondenied(w, err)
-			case !token.Valid: 
-				return permissiondenied(w, err)
-		}
+	cookie, ckerr := r.Cookie("jwtToken")
+	if ckerr != nil {
+		return ckerr //don't write error into JSON response for security
+	}
+	tokenString := cookie.Value
 
-		//checking if token belongs to this account
-		userID, err := strconv.Atoi(r.Header.Get("userid"))
-		if err != nil { return permissiondenied(w, err) }
+	token, err := validateJWT(tokenString)
+	switch {
+	case err != nil:
+		return err
+	case !token.Valid:
+		return err
+	}
 
-		account, err := s.GetAccountByUserID(userID)
-		if err != nil { return permissiondenied(w, err) }
+	userName, ckerr := r.Cookie("userName")
+	if ckerr != nil {
+		return ckerr
+	}
 
-		claims := token.Claims.(jwt.MapClaims)
-		switch {
-			case time.Now().After(claims["expiresAt"].(jwt.NumericDate).Time):
-				return permissiondenied(w, err)
-			case account.UserID != int(claims["userID"].(float64)): 
-				return permissiondenied(w, err)
-		}
+	acc, err := s.GetAccountByUserName(userName.Value)
+	if err != nil {
+		return err
+	}
 
-		return nil
+	claims := token.Claims.(jwt.MapClaims)
+	if claims["userName"] != acc.UserName || claims["userCreated"] != acc.Created {
+		return err
+	}
+
+	return nil
 }
-
 
 func validateJWT(tokenString string) (*jwt.Token, error) { //validate jwt token then the secret key
 	jwtSecret := os.Getenv("JWT_SECRET")
@@ -59,15 +56,23 @@ func validateJWT(tokenString string) (*jwt.Token, error) { //validate jwt token 
 
 func createJWT(acc *Account) (string, error) {
 	claim := &jwt.MapClaims{
-		"expiresAt": jwt.NewNumericDate(time.Now().Add(time.Hour * 672)),
-		"userID":    acc.UserID} //std jwt.Claim changes it to float64
+		"userName":    acc.UserName,
+		"userCreated": acc.Created,
+	} //std jwt.Claim changes it to float64
 
-	jwtSecret := os.Getenv("JWT_SECRET")
+	//jwtSecret := os.Getenv("JWT_SECRET")
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
-	return token.SignedString([]byte(jwtSecret))
+	return token.SignedString([]byte("jwtSecret"))
 }
 
-func permissiondenied(w http.ResponseWriter, err error) error {
-	log.Default().Println(err) //don't show error to user for security reasons
-	return WriteJSON(w, http.StatusForbidden, ApiError{Error: "permission denied"})
+func setCookie(w http.ResponseWriter, r *http.Request, name, value string) {
+	cookie := http.Cookie{
+		Name:     name,
+		Value:    value,
+		MaxAge:   604800,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	}
+	http.SetCookie(w, &cookie)
 }
