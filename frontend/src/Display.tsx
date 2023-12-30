@@ -1,30 +1,61 @@
 import { Link } from 'react-router-dom';
 import { useNavigate } from "react-router-dom";
 import { Button } from '@mui/base';
+import { JsonObjectExpression, JsonObjectExpressionStatement } from 'typescript';
  
-// type displayProps = {
-//     id: number,
-//     title: string,
+export interface content {
+    id: number,
+    username: string,
+    created: string,
+}
+
+export interface thread extends content {
+    title: string,
+    tag: string,
+}
+
+export interface post extends content {
+    title: string,
+    content: string,
+}
+
+// interface comment extends content {
 //     content: string,
-//     username: string,
 // }
 
-const Display = ({list}: {list: Array<>}) => {
-    const navigate = useNavigate();
-
+export const DisplayThreads = ({list}: {list: Array<thread>}) => {
     return (
-        <div className="blog-list">
-        {list.map(elem => (
-            <div className="preview" key={elem.id} >
-            <Link to={`/feed/${elem.id}`}>
-                <h2>{ elem.title }</h2>
-                <h3>{ elem.content }</h3>
-                <p>by { elem.username }</p>                  
-            </Link>
-            </div>
-        ))}
+        <div className="list">
+        {list.map(
+            elem => 
+                (<div className="preview" key={elem.id} >
+                <Link to={`/thread/${elem.id}`}>
+                    <h2>{ elem.title }</h2>
+                    <h3>{ elem.tag }</h3>
+                    <h4>by { elem.username }</h4>                  
+                </Link>
+                </div>
+                )
+        )}
         </div>
     );
 }
- 
-export default Display;
+
+export const DisplayPosts = ({list}: {list: Array<post>}) => {
+    return (
+        <div className="list">
+        {list.map(
+            elem => 
+                (<div className="preview" key={elem.id} >
+                <Link to={`/thread/${elem.id}`}>
+                    <h2>{ elem.title }</h2>
+                    <p>{ elem.content }</p>
+                    <h3>created on {elem.created}</h3>
+                    <h4>by { elem.username }</h4>                  
+                </Link>
+                </div>
+                )
+        )}
+        </div>
+    );
+}

@@ -1,17 +1,23 @@
 import { useState, useEffect } from 'react';
+import { NumberLiteralType } from 'typescript';
 
 
 const useFetch = (url: string) => {
-  const [data, setData] = useState<Array<JSON>|null>(null);
-  const [isPending, setIsPending] = useState<boolean>(true);
-  const [error, setError] = useState<any|null>(null);
+  const [data, setData] = useState(null);
+  const [isPending, setIsPending] = useState(true);
+  const [error, setError] = useState(null);
+  console.log(url);
 
   useEffect(() => {
     const abortCont = new AbortController();
-
-
     setTimeout(() => {
-      fetch(url, { signal: abortCont.signal })
+      fetch(url, 
+        { 
+          method: 'GET',
+          headers: { "Content-Type": "application/json" },
+          credentials: 'include',
+          signal: abortCont.signal 
+        })
       .then(res => {
         if (!res.ok) { // error coming back from server
           throw Error('could not fetch the data for that resource');
@@ -25,7 +31,6 @@ const useFetch = (url: string) => {
       })
       .catch(err => {
         if (err.name === 'AbortError') {
-          return new Response
           console.log('fetch aborted')
         } else {
           // auto catches network / connection error
@@ -38,7 +43,7 @@ const useFetch = (url: string) => {
     // abort the fetch
     return () => abortCont.abort();
   }, [url])
-
+  console.log(data);
   return { data, isPending, error };
 }
  

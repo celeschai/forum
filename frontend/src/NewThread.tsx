@@ -1,33 +1,32 @@
 import { FormEvent, useState } from "react";
-import { redirect } from "react-router-dom";
-import { hosturl } from "./App";
+import { useNavigate } from "react-router-dom";
 
 const NewThread = () => {
   const [title, setTitle] = useState('');
   const [tag, setTag] = useState('');
   const [author, setAuthor] = useState('mario');
-  //const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     const data = { 
-      username: author, 
       title: title, 
+      username: author, 
       tag: tag, 
     };
 
-    fetch(hosturl + "/new/thread", {
+    fetch("http:localhost:2999/new/thread", {
       method: 'POST',
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
     }).then(() => {
-      redirect("/feed");
+      navigate("/feed");
     })
   }
 
   return (
     <div className="create">
-      <h2>Add a New Blog</h2>
+      <h2>Add a New Thread</h2>
       <form onSubmit={handleSubmit}>
         <label>Thread title:</label>
         <input 
@@ -42,7 +41,7 @@ const NewThread = () => {
           value={author}
           onChange={(e) => setAuthor(e.target.value)}
         ></textarea>
-        <label>Blog author:</label>
+        <label>Location:</label>
         <select
           value={tag}
           onChange={(e) => setTag(e.target.value)}

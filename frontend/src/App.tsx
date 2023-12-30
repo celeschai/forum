@@ -9,6 +9,7 @@ import NewThread from './NewThread';
 import Account from './Account';
 import NewPost from './NewPost';
 import NewComment from './NewComment';
+import Thread from './Thread';
 
 export const hosturl: string = "http://localhost:2999"; 
 
@@ -22,11 +23,13 @@ function App() {
           <Routes>
               <Route path="/signin" element = {<SignIn />}/>
 
-              <Route path="/feed" element = {<Feed />}/>
+              <Route path="/feed/:tag" element = {<Feed />}/>
 
               <Route path="/newaccount" element = {<SignUp />} />
 
               <Route path="/account/:username" element = {<Account />} />
+
+              <Route path="/thread/:id" element = {<Thread allowdelete = {false} />} />
 
               <Route path="/new/thread" element = {<NewThread />} />
 

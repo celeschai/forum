@@ -194,29 +194,103 @@ func (s *PostgresStore) CreateComment(c *Comment) error {
 	return retrieveID(row, &c.CommentID)
 }
 
-func (s *PostgresStore) GetLatestThreads(pg int)([]*Thread, error) {
+func (s *PostgresStore) GetLatestThreads(tag string)([]*Thread, error) {
+	if tag == "latest" {
+		query := (`
+		SELECT * FROM threads
+		ORDER BY created DESC
+		`)
+		rows, err := s.db.Query(query, )
+		if err != nil {
+			return nil, err
+		}
+		threads := []*Thread{}
+		for rows.Next() {
+			t, err := ScanThread(rows)
+			if err != nil {
+				return nil, err
+			}
+			threads = append(threads, t)
+		}
+
+		return threads, nil
+
+	} else {
+		query := (`
+		SELECT * FROM threads
+		WHERE tag = $1
+		ORDER BY created DESC
+		`)
+		rows, err := s.db.Query(query, tag)
+		if err != nil {
+			return nil, err
+		}
+		threads := []*Thread{}
+		for rows.Next() {
+			t, err := ScanThread(rows)
+			if err != nil {
+				return nil, err
+			}
+			threads = append(threads, t)
+		}
+	
+		return threads, nil
+	}
+}
+
+func (s *PostgresStore) GetThreadByID(id int) ([]*Thread, error) {
 	query := (`
 	SELECT * FROM threads
-	ORDER BY created DESC
-	LIMIT 10
-	OFFSET (10*$1)
+	WHERE threadid = $1
 	`)
 
-	rows, err := s.db.Query(query, pg)
+	row, err := s.db.Query(query, id)
 	if err != nil {
 		return nil, err
 	}
 
-	threads := []*Thread{}
-	for rows.Next() {
-		t, err := ScanThread(rows)
+	thread := []*Thread{}
+	for row.Next() {
+		t, err := ScanThread(row)
 		if err != nil {
 			return nil, err
 		}
-		threads = append(threads, t)
+		thread = append(thread, t)
+	}	
+	return thread, nil
+}
+
+func (s *PostgresStore) GetThreadPosts(id int) (map[string]interface{}, error) {
+	thread, err := s.GetThreadByID(id)
+	if err != nil {
+		return nil, err
 	}
 
-	return threads, nil
+	query := (`
+	SELECT * FROM posts
+	WHERE threadid = $1
+	ORDER BY created DESC
+	`)
+
+	rows, err := s.db.Query(query, id)
+	if err != nil {
+		return nil, err
+	}
+
+	Posts := []*Post{}
+	for rows.Next() {
+		t, err := ScanPost(rows)
+		if err != nil {
+			return nil, err
+		}
+		Posts = append(Posts, t)
+	}
+
+	m := make(map[string]interface{})
+	m["thread"] = thread
+	m["posts"] = Posts
+
+	return m, nil
 }
 
 // helpers
@@ -285,10 +359,22 @@ func ScanThread(row *sql.Rows) (*Thread, error) {
 	return t, err
 }
 
+func ScanPost(row *sql.Rows) (*Post, error) {
+	p := new(Post)
+	err := row.Scan(
+		&p.PostID,
+		&p.ThreadID,
+		&p.Title,
+		&p.UserName,
+		&p.Content,
+		&p.Created)
+	return p, err
+}
+
 // seeding database
 func SeedData(s Database) *Account {
 
-	acc, err := NewAccount("dummyUser", "dummy@email.com", "dummyPassword")
+	acc, err := NewAccount("dummyUser2", "dummy2@email.com", "dummyPassword2")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -296,7 +382,7 @@ func SeedData(s Database) *Account {
 		log.Fatal(err)
 	}
 
-	t, err := NewThread(acc.UserName, "sampleThread", "sampleTag")
+	t, err := NewThread(acc.UserName, "sampleThread2", "sampleTag2")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -304,7 +390,7 @@ func SeedData(s Database) *Account {
 		log.Fatal(err)
 	}
 
-	p, err := NewPost(t.ThreadID, acc.UserName, "samplePostTitle", "samplePostContent")
+	p, err := NewPost(t.ThreadID, acc.UserName, "samplePostTitle2", "samplePostContent2")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -312,7 +398,7 @@ func SeedData(s Database) *Account {
 		log.Fatal(err)
 	}
 
-	c, err := NewComment(p.PostID, acc.UserName, "sampleCommentContent")
+	c, err := NewComment(p.PostID, acc.UserName, "sampleCommentContent2")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -30,27 +30,29 @@ function Copyright(props: any) {
   );
 }
 
-function HandleSubmit(event: React.FormEvent<HTMLFormElement>) {
+function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const data = { email: form.get('email'), password: form.get('password') };
 //abstract response 
-    fetch(hosturl + '/login', 
+    fetch("http://localhost:2999/login", 
     {
       method: 'POST',
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Accept": "application/json", },
       credentials: 'include',
       body: JSON.stringify(data),
     })
-    .then((response) => {
-        const stat = response.json()
-        .then((stat) => {
-          if (response.status === 200) {
-            window.location.href = "/feed";
-          } else {
-            console.log(stat.resp);
-          }
-        });})} 
+    .then((response) =>  
+      response.json()
+      .then((stat) => {
+        if (response.status === 200) {
+          window.location.href = "/feed/latest";
+        } else {
+          console.log(stat.resp);
+        }
+      }))}
 
 // TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
@@ -77,7 +79,7 @@ export default function SignIn() {
           <Typography component="h1" variant="h5">
             Sign in
           </Typography>
-          <Box component="form" onSubmit={HandleSubmit} noValidate sx={{ mt: 1 }}>
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
             <TextField
               margin="normal"
               required

@@ -1,30 +1,24 @@
 import useFetch from "./useFetch";
-import hosturl from "./App";
-import Display from "./Display";
+import { DisplayThreads } from "./Display";
+import { useParams } from "react-router-dom";
 
-type writingType = {
-    id: number,
-    title: string,
-    username: string,
-    content: string,
-    created_at: Date,
-}
-
+//figure out how to make pages
 
 const Feed = () => {
-    const url: string = hosturl + '/feed/latest/0';
-    const { data, error, isPending } = useFetch(url);
+    
+    const { tag } = useParams<{tag: string}>();
+  
+    const { data, error, isPending } = useFetch('http://localhost:2999/feed/' + tag);
 
     return (
         <div className="threads">
-            <h2>Latest Threads</h2>
+            <h1>Latest Threads</h1>
                 { isPending && <div>Loading...</div> }
                 { error && <div>{ error }</div> }
                 { data && (
                     <article>
-                       <Display list={data} />
-                    </article>)
-                }
+                       <DisplayThreads list={data} />
+                    </article>)}
         </div>
     );
 }

@@ -37,7 +37,6 @@ func JWTAuth(w http.ResponseWriter, r *http.Request, s Database) error {
 	if claims["userName"] != acc.UserName || claims["userCreated"] != acc.Created {
 		return err
 	}
-	
 	fmt.Println("JWT Authenticated")
 	return nil
 }

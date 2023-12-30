@@ -7,7 +7,7 @@ const Navbar = () => {
         <nav className="navbar">
             <h1>{ title }</h1>
             <div className="links">
-                <Link to="/feed">Latest</Link>
+                <Link to="/feed/latest">Latest</Link>
                 <Link to="/new/thread" style={{ 
                 color: 'white', 
                 backgroundColor: '#f1356d',

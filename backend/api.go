@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	//"strconv"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
@@ -21,9 +21,9 @@ func (s *APIServer) Run() {
 	router.HandleFunc("/account/{accnum}", makeHTTPHandleFunc(s.handleUser))
 
 	//router.HandleFunc("/feed", makeHTTPHandleFunc(s.handleFeed))
-	router.HandleFunc("/feed/latest/{page}", makeHTTPHandleFunc(s.handleLatestFeed))
+	router.HandleFunc("/feed/{tag}", makeHTTPHandleFunc(s.handleFeed))
 
-	router.HandleFunc("/thread/{threadid}", makeHTTPHandleFunc(s.handleThreads))
+	router.HandleFunc("/threadposts/{threadid}", makeHTTPHandleFunc(s.handleGetThreadPosts))
 	router.HandleFunc("/post/{postid}", makeHTTPHandleFunc(s.handlePosts))
 	router.HandleFunc("/comment/{commentid}", makeHTTPHandleFunc(s.handleComments))
 
@@ -32,7 +32,8 @@ func (s *APIServer) Run() {
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"http://localhost:" + frontend + "*"},
 		AllowCredentials: true,
-		Debug: true,
+		Debug: false,
+		AllowedHeaders: []string{"*"},
 	})
 	handler := c.Handler(router)
 	http.ListenAndServe(s.listenAddr, handler)
@@ -85,13 +86,18 @@ func (s *APIServer) handleUser(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func (s *APIServer) handleLatestFeed(w http.ResponseWriter, r *http.Request) error {
+func (s *APIServer) handleFeed(w http.ResponseWriter, r *http.Request) error {
+	if r.Method != "GET" {
+		return fmt.Errorf(r.Method, "method not allowed for reading latest threads")
+	}
+
 	err := JWTAuth(w, r, s.database)
 	if err != nil {
 		return WriteJSON(w, http.StatusUnauthorized, LoginResponse{Resp: err.Error()})
 	}
-	
-	threads, err := s.database.GetLatestThreads(0)
+
+	tag := mux.Vars(r)["tag"]
+	threads, err := s.database.GetLatestThreads(tag)
 	if err != nil {
 		return err
 	}
@@ -99,14 +105,53 @@ func (s *APIServer) handleLatestFeed(w http.ResponseWriter, r *http.Request) err
 	return WriteJSON(w, http.StatusOK, threads)
 }
 
-func (s *APIServer) handleFilter(w http.ResponseWriter, r *http.Request) error {
-	//check for JWT
-	return nil
+// func (s *APIServer) handleFilter(w http.ResponseWriter, r *http.Request) error {
+// 	//check for JWT
+// 	return nil
+// }
+
+
+
+func (s *APIServer) handleGetThreadPosts(w http.ResponseWriter, r *http.Request) error {
+	threadid, err := strconv.Atoi(mux.Vars(r)["threadid"])
+	if err != nil {
+		return err
+	}
+
+	posts, err := s.database.GetThreadPosts(threadid)
+	if err != nil {
+		return err
+	}
+
+	return WriteJSON(w, http.StatusOK, posts)
 }
 
-func (s *APIServer) handleThreads(w http.ResponseWriter, r *http.Request) error {
-	//check for JWT
-	return nil
+func (s *APIServer) handleNewThreads(w http.ResponseWriter, r *http.Request) error {
+	if r.Method != "POST" {
+		return fmt.Errorf(r.Method, "method not allowed for reading threads")
+	}
+
+	err := JWTAuth(w, r, s.database)
+	if err != nil {
+		return WriteJSON(w, http.StatusUnauthorized, LoginResponse{Resp: err.Error()})
+	}
+
+	req := new(Thread)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		return err
+	}
+
+	thread, err := NewThread(req.Title, req.Tag, req.UserName)
+	if err != nil {	
+		return err
+	}
+
+	err = s.database.CreateThread(thread)
+	if err != nil {
+		return err
+	}
+
+	return WriteJSON(w, http.StatusOK, thread)
 }
 
 func (s *APIServer) handlePosts(w http.ResponseWriter, r *http.Request) error {

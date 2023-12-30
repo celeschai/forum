@@ -79,11 +79,11 @@ type Database interface {
 	//UpdateAccount(*Account) error
 	//DeleteAccountByID(int) error
 
-	GetLatestThreads(int) ([]*Thread, error)
+	GetLatestThreads(string) ([]*Thread, error)
 	CreateThread(*Thread) error
 	// CreateThread(*Thread) error
 	// DeleteThread(*Thread) error - maybe cannot delete threads
-	//GetPosts() ([]*Post, error)
+	GetThreadPosts(int) (map[string]interface{}, error)
 
 	//storePosts(*Post, method) error
 	CreatePost(*Post) error
