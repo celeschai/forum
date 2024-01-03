@@ -9,7 +9,8 @@ import NewThread from './NewThread';
 import Account from './Account';
 import NewPost from './NewPost';
 import NewComment from './NewComment';
-import Thread from './Thread';
+import ThreadPosts from './ThreadPosts';
+import Start from './Start';
 
 export const hosturl: string = "http://localhost:2999"; 
 
@@ -21,21 +22,23 @@ function App() {
         <Navbar />
         <div className="content">
           <Routes>
-              <Route path="/signin" element = {<SignIn />}/>
+              <Route path="/home" element = {<Start url={hosturl.concat("/home")}/>} />
 
-              <Route path="/feed/:tag" element = {<Feed />}/>
+              <Route path="/login" element = {<SignIn url={hosturl.concat("/login")} />}/>
 
-              <Route path="/newaccount" element = {<SignUp />} />
+              <Route path="/feed/:tag" element = {<Feed url={hosturl} />}/>
 
-              <Route path="/account/:username" element = {<Account />} />
+              <Route path="/signup" element = {<SignUp url={hosturl.concat("/signup")}/>} />
 
-              <Route path="/thread/:id" element = {<Thread allowdelete = {false} />} />
+              <Route path="/account" element = {<Account url={hosturl} />} />
 
-              <Route path="/new/thread" element = {<NewThread />} />
+              <Route path="/threadposts/:id" element = {<ThreadPosts url={hosturl} />} />
 
-              <Route path="/new/post" element = {<NewPost />} />
+              <Route path="/newthread" element = {<NewThread />} />
 
-              <Route path="/new/comment" element = {<NewComment />} />
+              <Route path="/newpost" element = {<NewPost />} />
+
+              <Route path="/newcomment" element = {<NewComment />} />
 
               <Route path="*" element = {<NotFound />} />
               

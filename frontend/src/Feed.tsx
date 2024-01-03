@@ -1,23 +1,28 @@
 import useFetch from "./useFetch";
 import { DisplayThreads } from "./Display";
-import { useParams } from "react-router-dom";
-
+import { useState } from "react";
 //figure out how to make pages
 
-const Feed = () => {
-    
-    const { tag } = useParams<{tag: string}>();
+const Feed = ({url}: {url: string}) => {
+
+    const [tag, setTag] = useState('latest');
   
-    const { data, error, isPending } = useFetch('http://localhost:2999/feed/' + tag);
+    const { data, error, isPending } = useFetch(String.prototype.concat(url, '/feed/', tag));
 
     return (
         <div className="threads">
-            <h1>Latest Threads</h1>
+            <h1>Threads filtered by</h1>
+                <select value={tag}
+                    onChange={(e) => setTag(e.target.value)}>
+                    <option value="latest">Latest</option>
+                    <option value="University Town">University Town</option>
+                    <option value="School of Computing">School of Computing</option>
+                </select>
                 { isPending && <div>Loading...</div> }
                 { error && <div>{ error }</div> }
                 { data && (
                     <article>
-                       <DisplayThreads list={data} />
+                       <DisplayThreads url = {url} list = {data} allowDel = {false} />
                     </article>)}
         </div>
     );

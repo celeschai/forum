@@ -19,7 +19,7 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
-type LoginResponse struct {
+type ServerResponse struct {
 	Resp any `json:"resp"`
 }
 
@@ -74,8 +74,10 @@ type Comment struct {
 
 type Database interface {
 	CreateAccount(*Account) error //check if account exists
+	CheckExistingAcc(acc *CreateAccountRequest) error
 	GetAccountByUserName(string) (*Account, error)
 	GetAccountByEmail(string) (*Account, error)
+	GetAccUploads(string) (map[string]interface{}, error)
 	//UpdateAccount(*Account) error
 	//DeleteAccountByID(int) error
 
@@ -84,17 +86,21 @@ type Database interface {
 	// CreateThread(*Thread) error
 	// DeleteThread(*Thread) error - maybe cannot delete threads
 	GetThreadPosts(int) (map[string]interface{}, error)
+	GetThreadsByUser(userName string) ([]*Thread, error)
 
 	//storePosts(*Post, method) error
 	CreatePost(*Post) error
 	// DeletePost(*Post) error
 	// EditPost(*Post) error +++
-	//GetComments() ([]*Comment, error)
+	GetPostComments(id int) (map[string]interface{}, error)
+	GetPostsByUser(userName string) ([]*Post, error)
 
 	//storeComments(*Comment, method) error
 	CreateComment(*Comment) error
 	// DeleteComment(*Comment) error
 	// EditComment(*Comment) error +++
+
+	Delete(typ string, id int) error
 }
 
 // check connection: nc -vz localhost 5432

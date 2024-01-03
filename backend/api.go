@@ -16,16 +16,20 @@ import (
 func (s *APIServer) Run() {
 	router := mux.NewRouter()
 
+	router.HandleFunc("/home", makeHTTPHandleFunc(s.handleJWT))
 	router.HandleFunc("/login", makeHTTPHandleFunc(s.handleLogin))
 	router.HandleFunc("/signup", makeHTTPHandleFunc(s.handleSignup))
-	router.HandleFunc("/account/{accnum}", makeHTTPHandleFunc(s.handleUser))
+	router.HandleFunc("/account", makeHTTPHandleFunc(s.handleAccount))
 
 	//router.HandleFunc("/feed", makeHTTPHandleFunc(s.handleFeed))
 	router.HandleFunc("/feed/{tag}", makeHTTPHandleFunc(s.handleFeed))
+	router.HandleFunc("/newthread", makeHTTPHandleFunc(s.handleNewThread))
 
 	router.HandleFunc("/threadposts/{threadid}", makeHTTPHandleFunc(s.handleGetThreadPosts))
-	router.HandleFunc("/post/{postid}", makeHTTPHandleFunc(s.handlePosts))
-	router.HandleFunc("/comment/{commentid}", makeHTTPHandleFunc(s.handleComments))
+	router.HandleFunc("/postcomments/{postid}", makeHTTPHandleFunc(s.handleGetPostComments))
+
+	router.HandleFunc("/delete/{type}/{id}", makeHTTPHandleFunc(s.handleDelete))
+	//router.HandleFunc("/comment/{commentid}", makeHTTPHandleFunc(s.handleComments))
 
 	log.Println("JSON API server running on port", s.listenAddr)
 
@@ -34,20 +38,28 @@ func (s *APIServer) Run() {
 		AllowCredentials: true,
 		Debug: false,
 		AllowedHeaders: []string{"*"},
+		AllowedMethods: []string{http.MethodGet, http.MethodPost, http.MethodDelete, http.MethodOptions, http.MethodPatch},
 	})
 	handler := c.Handler(router)
 	http.ListenAndServe(s.listenAddr, handler)
 }
 
-func (s *APIServer) handleLogin(w http.ResponseWriter, r *http.Request) error {
-	if r.Method != "POST" {
-		return fmt.Errorf(r.Method, "method not allowed for login")
+func (s *APIServer) handleJWT(w http.ResponseWriter, r *http.Request) error {
+	if r.Method != "GET" {
+		return WriteJSON(w, http.StatusMethodNotAllowed, nil)
 	}
 
 	if JWTAuth(w, r, s.database) == nil {
-		return WriteJSON(w, http.StatusOK, LoginResponse{Resp: "Welcome Back!"})
-	} 
-	//*** needs to be incorporated into feed page, if user is logged in, no need to jump to sign in page
+		return WriteJSON(w, http.StatusOK, "Welcome Back!")
+	}
+
+	return WriteJSON(w, http.StatusUnauthorized, nil)
+}
+
+func (s *APIServer) handleLogin(w http.ResponseWriter, r *http.Request) error {
+	if r.Method != "POST" {
+		return WriteJSON(w, http.StatusMethodNotAllowed, nil)
+	}
 
 	req := new(LoginRequest)
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -57,11 +69,9 @@ func (s *APIServer) handleLogin(w http.ResponseWriter, r *http.Request) error {
 	acc, err := s.database.GetAccountByEmail(req.Email)
 	switch {
 	case err != nil:
-		return WriteJSON(w, http.StatusUnauthorized,
-			LoginResponse{Resp: err.Error()})
+		return WriteJSON(w, http.StatusUnauthorized, nil)
 	case !acc.ValidatePassword(req.Password):
-		return WriteJSON(w, http.StatusUnauthorized,
-			LoginResponse{Resp: "invalid password"})
+		return WriteJSON(w, http.StatusUnauthorized, nil)
 	}
 
 	token, err := createJWT(acc)
@@ -71,69 +81,103 @@ func (s *APIServer) handleLogin(w http.ResponseWriter, r *http.Request) error {
 	setCookie(w, r, "jwtToken", token)
 	setCookie(w, r, "userName", acc.UserName)
 
-	return WriteJSON(w, http.StatusOK, LoginResponse{Resp: "succesful login"})
+	return WriteJSON(w, http.StatusOK, ServerResponse{Resp: "succesful login"})
 }
+
 
 func (s *APIServer) handleSignup(w http.ResponseWriter, r *http.Request) error {
 	if r.Method != "POST" {
-		return fmt.Errorf(r.Method, "method not allowed for signup")
+		return WriteJSON(w, http.StatusMethodNotAllowed, nil)
 	}
-	return WriteJSON(w, http.StatusOK, LoginResponse{Resp: nil})
+
+	req := new(CreateAccountRequest)
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return err
+	}
+
+	exist := s.database.CheckExistingAcc(req)
+	if exist != nil {
+		return WriteJSON(w, http.StatusConflict, ServerResponse{Resp: exist.Error()})
+	}
+
+	acc, err := NewAccount(req.UserName, req.Email, req.Password)
+	if err != nil {
+		return WriteJSON(w, http.StatusBadRequest, ServerResponse{Resp: "failed to create account, please try again"})
+	}
+
+	if err := s.database.CreateAccount(acc); err != nil {
+		return WriteJSON(w, http.StatusBadRequest, ServerResponse{Resp: err.Error()})
+	}
+	
+	return WriteJSON(w, http.StatusOK, ServerResponse{Resp: "succesful signup"})
 }
 
-func (s *APIServer) handleUser(w http.ResponseWriter, r *http.Request) error {
-	//check for JWT
-	return nil
+func (s *APIServer) handleAccount(w http.ResponseWriter, r *http.Request) error {
+	err := JWTAuth(w, r, s.database)
+	if err != nil {
+		return WriteJSON(w, http.StatusUnauthorized, ServerResponse{Resp: "please log in again."})
+	}
+
+	cookie, cookerr := r.Cookie("userName")
+	if cookerr != nil {
+		return err
+	}
+	username := cookie.Value
+
+	acc, err := s.database.GetAccUploads(username)
+	if err != nil {
+		return err
+	}
+	acc["username"]=username
+
+	return WriteJSON(w, http.StatusOK, acc)
 }
 
 func (s *APIServer) handleFeed(w http.ResponseWriter, r *http.Request) error {
-	if r.Method != "GET" {
-		return fmt.Errorf(r.Method, "method not allowed for reading latest threads")
-	}
-
 	err := JWTAuth(w, r, s.database)
 	if err != nil {
-		return WriteJSON(w, http.StatusUnauthorized, LoginResponse{Resp: err.Error()})
+		return WriteJSON(w, http.StatusUnauthorized, ServerResponse{Resp: "please log in again."})
+	}
+
+	if r.Method != "GET" {
+		return WriteJSON(w, http.StatusMethodNotAllowed, nil)
 	}
 
 	tag := mux.Vars(r)["tag"]
 	threads, err := s.database.GetLatestThreads(tag)
 	if err != nil {
-		return err
+		return WriteJSON(w, http.StatusBadRequest, ServerResponse{Resp: err.Error()})
 	}
 
 	return WriteJSON(w, http.StatusOK, threads)
 }
 
-// func (s *APIServer) handleFilter(w http.ResponseWriter, r *http.Request) error {
-// 	//check for JWT
-// 	return nil
-// }
-
-
-
 func (s *APIServer) handleGetThreadPosts(w http.ResponseWriter, r *http.Request) error {
+	if r.Method != "GET" {
+		return WriteJSON(w, http.StatusMethodNotAllowed, nil)
+	}
+
 	threadid, err := strconv.Atoi(mux.Vars(r)["threadid"])
 	if err != nil {
-		return err
+		return WriteJSON(w, http.StatusBadRequest, ServerResponse{Resp: err.Error()})	
 	}
 
 	posts, err := s.database.GetThreadPosts(threadid)
 	if err != nil {
-		return err
+		return WriteJSON(w, http.StatusBadRequest, ServerResponse{Resp: err.Error()})	
 	}
 
 	return WriteJSON(w, http.StatusOK, posts)
 }
 
-func (s *APIServer) handleNewThreads(w http.ResponseWriter, r *http.Request) error {
+func (s *APIServer) handleNewThread(w http.ResponseWriter, r *http.Request) error {
 	if r.Method != "POST" {
-		return fmt.Errorf(r.Method, "method not allowed for reading threads")
+		return WriteJSON(w, http.StatusMethodNotAllowed, nil)
 	}
 
 	err := JWTAuth(w, r, s.database)
 	if err != nil {
-		return WriteJSON(w, http.StatusUnauthorized, LoginResponse{Resp: err.Error()})
+		return WriteJSON(w, http.StatusUnauthorized, ServerResponse{Resp: err.Error()})
 	}
 
 	req := new(Thread)
@@ -141,7 +185,13 @@ func (s *APIServer) handleNewThreads(w http.ResponseWriter, r *http.Request) err
 		return err
 	}
 
-	thread, err := NewThread(req.Title, req.Tag, req.UserName)
+	cookie, cookerr := r.Cookie("userName")
+	if cookerr != nil {
+		return err
+	}
+	username := cookie.Value
+
+	thread, err := NewThread(req.Title, username, req.Tag)
 	if err != nil {	
 		return err
 	}
@@ -154,13 +204,38 @@ func (s *APIServer) handleNewThreads(w http.ResponseWriter, r *http.Request) err
 	return WriteJSON(w, http.StatusOK, thread)
 }
 
-func (s *APIServer) handlePosts(w http.ResponseWriter, r *http.Request) error {
+func (s *APIServer) handleGetPostComments(w http.ResponseWriter, r *http.Request) error {
 	//check for JWT
 	return nil
 }
 
 func (s *APIServer) handleComments(w http.ResponseWriter, r *http.Request) error {
 	//check for JWT
+	return nil
+}
+
+func (s *APIServer) handleDelete(w http.ResponseWriter, r *http.Request) error {
+	if r.Method != "DELETE" {
+		return fmt.Errorf(r.Method, "method not allowed for deleting")
+	}
+
+	err := JWTAuth(w, r, s.database)
+	if err != nil {
+		return WriteJSON(w, http.StatusUnauthorized, ServerResponse{Resp: err.Error()})
+	}
+
+	typ := mux.Vars(r)["type"]
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		return err
+	}
+	fmt.Println(typ, id)
+
+	delErr := s.database.Delete(typ, id)
+	if delErr != nil {
+		return WriteJSON(w, http.StatusBadRequest, ServerResponse{Resp: delErr.Error()})
+	}
+
 	return nil
 }
 

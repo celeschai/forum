@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { NumberLiteralType } from 'typescript';
 
 
 const useFetch = (url: string) => {
@@ -27,7 +26,7 @@ const useFetch = (url: string) => {
       .then(data => {
         setIsPending(false);
         setData(data);
-        setError(null);
+        setError(null); 
       })
       .catch(err => {
         if (err.name === 'AbortError') {
@@ -40,9 +39,9 @@ const useFetch = (url: string) => {
       })
     }, 1000);
 
-    // abort the fetch
     return () => abortCont.abort();
   }, [url])
+
   console.log(data);
   return { data, isPending, error };
 }

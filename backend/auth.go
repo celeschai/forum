@@ -9,9 +9,9 @@ import (
 func JWTAuth(w http.ResponseWriter, r *http.Request, s Database) error {
 	fmt.Println("calling JWT auth middleware")
 
-	cookie, ckerr := r.Cookie("jwtToken")
-	if ckerr != nil {
-		return ckerr //don't write error into JSON response for security
+	cookie, cookerr := r.Cookie("jwtToken")
+	if cookerr != nil {
+		return cookerr //don't write error into JSON response for security
 	}
 	tokenString := cookie.Value
 
@@ -37,6 +37,7 @@ func JWTAuth(w http.ResponseWriter, r *http.Request, s Database) error {
 	if claims["userName"] != acc.UserName || claims["userCreated"] != acc.Created {
 		return err
 	}
+	
 	fmt.Println("JWT Authenticated")
 	return nil
 }
@@ -76,3 +77,4 @@ func setCookie(w http.ResponseWriter, r *http.Request, name, value string) {
 	}
 	http.SetCookie(w, &cookie)
 }
+

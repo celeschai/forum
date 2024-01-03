@@ -12,35 +12,46 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-
-
-
-function Copyright(props: any) {
-  return (
-    <Typography variant="body2" color="text.secondary" align="center" {...props} >
-      {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
+import { useState } from 'react';
+import { wait } from '@testing-library/user-event/dist/utils';
 
 // TODO remove, this demo shouldn't need to reset the theme.
 
 const defaultTheme = createTheme();
 
-export default function SignUp() {
+export default function SignUp({url}: {url: string}) {
+  const [result, setResult] = useState("");
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
-  };
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      const data = { username: form.get('username'), email: form.get('email'), password: form.get('password') };
+      
+      fetch(url, {
+          method: "POST",
+          headers: { 
+              "Content-Type": "application/json",
+              "Accept": "application/json", },
+          credentials: 'include',
+          body: JSON.stringify(data),
+      }).then((response) => {
+          if (response.status === 200) {
+              setResult("Success! Please log in.");
+              wait(1000);
+              window.location.href = "/login";
+          } else if (response.status == 409) {
+              setResult("Account already exists, please log in.");
+              wait(1000);
+              window.location.href = "/login";
+          } else {
+              setResult("Failed to create account, please try again.");
+          } 
+      })     
+      .catch((err: any) => {
+          console.log(err);
+      });
+  }
+
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -60,27 +71,16 @@ export default function SignUp() {
           <Typography component="h1" variant="h5">
             Sign up
           </Typography>
+          <h5>{result}</h5>
           <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  autoComplete="given-name"
-                  name="firstName"
-                  required
-                  fullWidth
-                  id="firstName"
-                  label="First Name"
-                  autoFocus
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12}>
                 <TextField
                   required
                   fullWidth
-                  id="lastName"
-                  label="Last Name"
-                  name="lastName"
-                  autoComplete="family-name"
+                  id="username"
+                  label="Username"
+                  name="username"
                 />
               </Grid>
               <Grid item xs={12}>
@@ -104,12 +104,6 @@ export default function SignUp() {
                   autoComplete="new-password"
                 />
               </Grid>
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={<Checkbox value="allowExtraEmails" color="primary" />}
-                  label="I want to receive inspiration, marketing promotions and updates via email."
-                />
-              </Grid>
             </Grid>
             <Button
               type="submit"
@@ -119,16 +113,11 @@ export default function SignUp() {
             >
               Sign Up
             </Button>
-            <Grid container justifyContent="flex-end">
-              <Grid item>
-                <Link href="#" variant="body2">
-                  Already have an account? Sign in
-                </Link>
-              </Grid>
-            </Grid>
+            <Link href="/signin" variant="body2">
+              Already have an account? Sign in
+            </Link>
           </Box>
         </Box>
-        <Copyright sx={{ mt: 5 }} />
       </Container>
     </ThemeProvider>
   );

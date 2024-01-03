@@ -3,63 +3,46 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import Link from '@mui/material/Link';
-import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
+import Link from '@mui/material/Link';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import hosturl from "./App";
-
-
-function Copyright(props: any) {
-  return (
-    <Typography variant="body2" color="text.secondary" align="center" {...props}>
-      {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
-        celessss
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
-
-function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const data = { email: form.get('email'), password: form.get('password') };
-//abstract response 
-    fetch("http://localhost:2999/login", 
-    {
-      method: 'POST',
-      headers: { 
-        "Content-Type": "application/json",
-        "Accept": "application/json", },
-      credentials: 'include',
-      body: JSON.stringify(data),
-    })
-    .then((response) =>  
-      response.json()
-      .then((stat) => {
-        if (response.status === 200) {
-          window.location.href = "/feed/latest";
-        } else {
-          console.log(stat.resp);
-        }
-      }))}
-
+import { useState } from 'react';
 // TODO remove, this demo shouldn't need to reset the theme.
+
+
 const defaultTheme = createTheme();
 
-export default function SignIn() {
+export default function SignIn({url}: {url: string}) {
+  const [result, setResult] = useState("");
 
-  
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      const data = { email: form.get('email'), password: form.get('password') };
+      
+      fetch(url, {
+          method: "POST",
+          headers: { 
+              "Content-Type": "application/json",
+              "Accept": "application/json", },
+          credentials: 'include',
+          body: JSON.stringify(data),
+      }).then((response) => {
+          if (response.status === 200) {
+              setResult("Success! Redirecting...");
+              window.location.href = "/feed/latest";
+          } else {
+              setResult("Failed to log in, please check your details and try again");
+          }
+      })     
+      .catch((err: any) => {
+          console.log(err);
+      });
+  }
+
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -79,6 +62,7 @@ export default function SignIn() {
           <Typography component="h1" variant="h5">
             Sign in
           </Typography>
+          <h5>{result}</h5>
           <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
             <TextField
               margin="normal"
@@ -100,10 +84,10 @@ export default function SignIn() {
               id="password"
               autoComplete="current-password"
             />
-            <FormControlLabel
+            {/* <FormControlLabel
               control={<Checkbox value="remember" color="primary" />}
               label="Remember me"
-            />
+            /> */}
             <Button
               type="submit"
               fullWidth
@@ -111,21 +95,11 @@ export default function SignIn() {
               sx={{ mt: 3, mb: 2 }}>
               Sign In
             </Button>
-            <Grid container>
-              <Grid item xs>
-                <Link href="#" variant="body2">
-                 
-                </Link>
-              </Grid>
-              <Grid item>
-                <Link href="#" variant="body2">
-                  {"Don't have an account? Sign Up"}
-                </Link>
-              </Grid>
-            </Grid>
+            <Link href="/signup" variant="body2">
+              {"Don't have an account? Sign Up"}
+            </Link>
           </Box>
         </Box>
-        <Copyright sx={{ mt: 8, mb: 4 }} />
       </Container>
     </ThemeProvider>
   );

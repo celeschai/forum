@@ -31,7 +31,7 @@ func NewAccount(username, email, password string) (*Account, error) {
 	}, nil
 }
 
-func NewThread(username string, title, tag string) (*Thread, error) {
+func NewThread(title, username, tag string) (*Thread, error) {
 	return &Thread{
 		Title:    title,
 		UserName: username,

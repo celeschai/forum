@@ -87,7 +87,7 @@ func (s *PostgresStore) createTables() error {
 	return err
 }
 
-func (s *PostgresStore) CheckExistingAcc(acc *Account) error {
+func (s *PostgresStore) CheckExistingAcc(acc *CreateAccountRequest) error {
 	check := (`SELECT * FROM users WHERE email = $1`)
 	exist := s.db.QueryRow(check, acc.Email)
 	if exists := exist.Scan(); exists != sql.ErrNoRows {
@@ -204,16 +204,8 @@ func (s *PostgresStore) GetLatestThreads(tag string)([]*Thread, error) {
 		if err != nil {
 			return nil, err
 		}
-		threads := []*Thread{}
-		for rows.Next() {
-			t, err := ScanThread(rows)
-			if err != nil {
-				return nil, err
-			}
-			threads = append(threads, t)
-		}
 
-		return threads, nil
+		return ScanThreads(rows)
 
 	} else {
 		query := (`
@@ -225,20 +217,12 @@ func (s *PostgresStore) GetLatestThreads(tag string)([]*Thread, error) {
 		if err != nil {
 			return nil, err
 		}
-		threads := []*Thread{}
-		for rows.Next() {
-			t, err := ScanThread(rows)
-			if err != nil {
-				return nil, err
-			}
-			threads = append(threads, t)
-		}
 	
-		return threads, nil
+		return ScanThreads(rows)
 	}
 }
 
-func (s *PostgresStore) GetThreadByID(id int) ([]*Thread, error) {
+func (s *PostgresStore) GetThreadByThreadID(id int) ([]*Thread, error) {
 	query := (`
 	SELECT * FROM threads
 	WHERE threadid = $1
@@ -248,24 +232,11 @@ func (s *PostgresStore) GetThreadByID(id int) ([]*Thread, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	thread := []*Thread{}
-	for row.Next() {
-		t, err := ScanThread(row)
-		if err != nil {
-			return nil, err
-		}
-		thread = append(thread, t)
-	}	
-	return thread, nil
+	
+	return ScanThreads(row)
 }
 
-func (s *PostgresStore) GetThreadPosts(id int) (map[string]interface{}, error) {
-	thread, err := s.GetThreadByID(id)
-	if err != nil {
-		return nil, err
-	}
-
+func (s *PostgresStore) GetPostsByThreadID(id int) ([]*Post, error) {
 	query := (`
 	SELECT * FROM posts
 	WHERE threadid = $1
@@ -277,24 +248,133 @@ func (s *PostgresStore) GetThreadPosts(id int) (map[string]interface{}, error) {
 		return nil, err
 	}
 
-	Posts := []*Post{}
-	for rows.Next() {
-		t, err := ScanPost(rows)
-		if err != nil {
-			return nil, err
-		}
-		Posts = append(Posts, t)
+	return ScanPosts(rows)
+}
+
+func (s *PostgresStore) GetThreadPosts(id int) (map[string]interface{}, error) {
+	thread, err := s.GetThreadByThreadID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	posts, err := s.GetPostsByThreadID(id)
+	if err != nil {
+		return nil, err
 	}
 
 	m := make(map[string]interface{})
 	m["thread"] = thread
-	m["posts"] = Posts
+	m["posts"] = posts
 
 	return m, nil
 }
 
+func (s *PostgresStore) GetPostComments(id int) (map[string]interface{}, error) {
+	return nil, nil
+}
+
+func (s *PostgresStore) GetThreadsByUser(userName string) ([]*Thread, error) {
+	query := (`
+	SELECT * FROM threads
+	WHERE username = $1
+	ORDER BY created DESC
+	`)
+
+	rows, err := s.db.Query(query, userName)
+	if err != nil {
+		return nil, err
+	}
+
+	return ScanThreads(rows)
+}
+
+func (s *PostgresStore) GetPostsByUser(userName string) ([]*Post, error) {
+	query := (`
+	SELECT * FROM posts
+	WHERE username = $1
+	ORDER BY created DESC
+	`)
+
+	rows, err := s.db.Query(query, userName)
+	if err != nil {
+		return nil, err
+	}
+
+	return ScanPosts(rows)
+}
+
+func (s *PostgresStore) GetCommentsByUser(userName string) ([]*Comment, error) {
+	query := (`
+	SELECT * FROM comments
+	WHERE username = $1
+	ORDER BY created DESC
+	`)
+
+	rows, err := s.db.Query(query, userName)
+	if err != nil {
+		return nil, err
+	}
+
+	return ScanComments(rows)
+}
+
+func (s *PostgresStore) GetAccUploads(userName string) (map[string]interface{}, error) {
+	threads, err := s.GetThreadsByUser(userName)
+	if err != nil {
+		return nil, err
+	}
+
+	posts, err := s.GetPostsByUser(userName)
+	if err != nil {
+		return nil, err
+	}
+
+	comments, err := s.GetCommentsByUser(userName)
+	if err != nil {
+		return nil, err
+	}
+
+	m := make(map[string]interface{})
+	m["threads"] = threads
+	m["posts"] = posts
+	m["comments"] = comments
+
+	return m, nil
+}
+
+func (s *PostgresStore) Delete(typ string, id int) error {
+	tquery := (`
+	DELETE FROM threads
+	WHERE threadid = $1 
+	`)
+	pquery := (`
+	DELETE FROM posts
+	WHERE postid = $1
+	`)
+	cquery := (`
+	DELETE FROM comments
+	WHERE commentid = $1
+	`)
+
+	var Q string
+	switch {
+		case typ == "thread":
+			Q = tquery
+		case typ == "post":
+			Q = pquery
+		case typ == "comment":
+			Q = cquery
+	}
+
+	_, err := s.db.Query(Q, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // helpers
-func retrieveID(r *sql.Rows, mem any) error {
+func retrieveID (r *sql.Rows, mem any) error {
 	for r.Next() {
 		err2 := r.Scan(mem)
 		if err2 != nil {
@@ -348,7 +428,7 @@ func ScanAccount(row *sql.Rows) (*Account, error) {
 	return acc, err
 }
 
-func ScanThread(row *sql.Rows) (*Thread, error) {
+func ScanT(row *sql.Rows) (*Thread, error) {
 	t := new(Thread)
 	err := row.Scan(
 		&t.ThreadID,
@@ -359,7 +439,19 @@ func ScanThread(row *sql.Rows) (*Thread, error) {
 	return t, err
 }
 
-func ScanPost(row *sql.Rows) (*Post, error) {
+func ScanThreads(row *sql.Rows) ([]*Thread, error) {
+	threads := []*Thread{}
+	for row.Next() {
+		t, err := ScanT(row)
+		if err != nil {
+			return nil, err
+		}
+		threads = append(threads, t)
+	}	
+	return threads, nil
+}
+
+func ScanP(row *sql.Rows) (*Post, error) {
 	p := new(Post)
 	err := row.Scan(
 		&p.PostID,
@@ -369,6 +461,41 @@ func ScanPost(row *sql.Rows) (*Post, error) {
 		&p.Content,
 		&p.Created)
 	return p, err
+}
+
+func ScanPosts(row *sql.Rows) ([]*Post, error) {
+	posts := []*Post{}
+	for row.Next() {
+		t, err := ScanP(row)
+		if err != nil {
+			return nil, err
+		}
+		posts = append(posts, t)
+	}	
+	return posts, nil
+}
+
+func ScanC(row *sql.Rows) (*Comment, error) {
+	c := new(Comment)
+	err := row.Scan(
+		&c.CommentID,
+		&c.PostID,
+		&c.UserName,
+		&c.Content,
+		&c.Created)
+	return c, err
+}
+
+func ScanComments(row *sql.Rows) ([]*Comment, error) {
+	comments := []*Comment{}
+	for row.Next() {
+		c, err := ScanC(row)
+		if err != nil {
+			return nil, err
+		}
+		comments = append(comments, c)
+	}	
+	return comments, nil
 }
 
 // seeding database

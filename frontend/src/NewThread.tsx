@@ -4,25 +4,32 @@ import { useNavigate } from "react-router-dom";
 const NewThread = () => {
   const [title, setTitle] = useState('');
   const [tag, setTag] = useState('');
-  const [author, setAuthor] = useState('mario');
-  const navigate = useNavigate();
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     const data = { 
       title: title, 
-      username: author, 
       tag: tag, 
     };
 
-    fetch("http:localhost:2999/new/thread", {
+    fetch("http://localhost:2999/newthread", {
       method: 'POST',
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Accept": "application/json", },
+      credentials: 'include',
       body: JSON.stringify(data)
-    }).then(() => {
-      navigate("/feed");
-    })
-  }
+    }).then((response) =>  
+        response.json()
+        .then((stat) => {
+          if (response.status === 200) {
+            window.location.href = "/feed/latest";
+          } else {
+            console.log(stat.resp);
+          }
+      
+    }))}
+  
 
   return (
     <div className="create">
@@ -35,19 +42,18 @@ const NewThread = () => {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
-        <label>Your Username:</label>
+        {/* <label>Your Username:</label>
         <textarea
           required
           value={author}
           onChange={(e) => setAuthor(e.target.value)}
-        ></textarea>
+        ></textarea> */}
         <label>Location:</label>
         <select
           value={tag}
-          onChange={(e) => setTag(e.target.value)}
-        >
-          <option value="ut">University Town</option>
-          <option value="soc">School of Computing</option>
+          onChange={(e) => setTag(e.target.value)}>
+          <option value="University Town">University Town</option>
+          <option value="School of Computing">School of Computing</option>
         </select>
         <button>Add Blog</button>
       </form>
