@@ -38,7 +38,7 @@ const Account = ({url}: {url: string}) => {
             <h2>Threads created</h2>
                 { isPending && <div>Loading...</div> }
                 { error && <div>{ error }</div> }
-                { data && <DisplayThreads url={url} allowDel = {true} list = {data["threads"]} /> }
+                { data && <DisplayThreads url={url} allowEdit = {true} list = {data["threads"]} /> }
 
             <h2>Posts created</h2>
                 { isPending && <div>Loading...</div> }

@@ -1,7 +1,6 @@
 import { FormEvent, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
-const NewThread = () => {
+const NewThread = ({url}:{url:string}) => {
   const [title, setTitle] = useState('');
   const [tag, setTag] = useState('');
 
@@ -12,7 +11,7 @@ const NewThread = () => {
       tag: tag, 
     };
 
-    fetch("http://localhost:2999/newthread", {
+    fetch(url.concat("/new/thread"), {
       method: 'POST',
       headers: { 
         "Content-Type": "application/json",
@@ -42,12 +41,6 @@ const NewThread = () => {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
-        {/* <label>Your Username:</label>
-        <textarea
-          required
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
-        ></textarea> */}
         <label>Location:</label>
         <select
           value={tag}

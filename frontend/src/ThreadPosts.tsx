@@ -24,7 +24,7 @@ const ThreadPosts = ({url}: {url: string}) => {
         <div className="Thread">
             { isPending && <div>Loading...</div> }
             { error && <div>{ error }</div> }
-            { data && <DisplayThreads url={url} allowDel = {false} list={data['thread']} /> }
+            { data && <DisplayThreads url={url} allowEdit = {false} list={data['thread']} /> }
         </div>
         <div className="Post">
             { data && <DisplayPosts list={data['posts']} /> }

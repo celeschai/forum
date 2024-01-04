@@ -22,7 +22,7 @@ const Feed = ({url}: {url: string}) => {
                 { error && <div>{ error }</div> }
                 { data && (
                     <article>
-                       <DisplayThreads url = {url} list = {data} allowDel = {false} />
+                       <DisplayThreads url = {url} list = {data} allowEdit = {false} />
                     </article>)}
         </div>
     );

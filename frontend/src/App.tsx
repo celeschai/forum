@@ -11,6 +11,8 @@ import NewPost from './NewPost';
 import NewComment from './NewComment';
 import ThreadPosts from './ThreadPosts';
 import Start from './Start';
+import {EditThread} from './Edit';
+import {thread} from './Display';
 
 export const hosturl: string = "http://localhost:2999"; 
 
@@ -32,13 +34,17 @@ function App() {
 
               <Route path="/account" element = {<Account url={hosturl} />} />
 
+              <Route 
+                path="/patch/thread/:id" 
+                element = {<EditThread url = {hosturl}/>} />
+
               <Route path="/threadposts/:id" element = {<ThreadPosts url={hosturl} />} />
 
-              <Route path="/newthread" element = {<NewThread />} />
+              <Route path="/new/thread" element = {<NewThread url={hosturl} />} />
 
-              <Route path="/newpost" element = {<NewPost />} />
+              <Route path="/new/post" element = {<NewPost />} />
 
-              <Route path="/newcomment" element = {<NewComment />} />
+              <Route path="/new/comment" element = {<NewComment />} />
 
               <Route path="*" element = {<NotFound />} />
               

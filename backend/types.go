@@ -69,8 +69,10 @@ type Comment struct {
 	Created  time.Time `json:"created"`
 }
 
-// // database
-// type method string
+type PatchRequest struct {
+	Input1 string `json:"input1"`
+	Input2 string `json:"input2"`
+}
 
 type Database interface {
 	CreateAccount(*Account) error //check if account exists
@@ -101,9 +103,11 @@ type Database interface {
 	// EditComment(*Comment) error +++
 
 	Delete(typ string, id int) error
+	Update(input1, input2, typ string, id int) error
 }
 
 // check connection: nc -vz localhost 5432
 type PostgresStore struct {
-	db *sql.DB
+	db *sql.DB //easier change of database if need be
 }
+

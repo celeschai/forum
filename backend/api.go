@@ -21,14 +21,15 @@ func (s *APIServer) Run() {
 	router.HandleFunc("/signup", makeHTTPHandleFunc(s.handleSignup))
 	router.HandleFunc("/account", makeHTTPHandleFunc(s.handleAccount))
 
-	//router.HandleFunc("/feed", makeHTTPHandleFunc(s.handleFeed))
 	router.HandleFunc("/feed/{tag}", makeHTTPHandleFunc(s.handleFeed))
-	router.HandleFunc("/newthread", makeHTTPHandleFunc(s.handleNewThread))
+	router.HandleFunc("/new/{type}", makeHTTPHandleFunc(s.handleNewThread))
 
 	router.HandleFunc("/threadposts/{threadid}", makeHTTPHandleFunc(s.handleGetThreadPosts))
 	router.HandleFunc("/postcomments/{postid}", makeHTTPHandleFunc(s.handleGetPostComments))
 
 	router.HandleFunc("/delete/{type}/{id}", makeHTTPHandleFunc(s.handleDelete))
+	router.HandleFunc("/patch/{type}/{id}", makeHTTPHandleFunc(s.handlePatch))
+
 	//router.HandleFunc("/comment/{commentid}", makeHTTPHandleFunc(s.handleComments))
 
 	log.Println("JSON API server running on port", s.listenAddr)
@@ -209,14 +210,14 @@ func (s *APIServer) handleGetPostComments(w http.ResponseWriter, r *http.Request
 	return nil
 }
 
-func (s *APIServer) handleComments(w http.ResponseWriter, r *http.Request) error {
-	//check for JWT
-	return nil
-}
+// func (s *APIServer) handleComments(w http.ResponseWriter, r *http.Request) error {
+// 	//check for JWT
+// 	return nil
+// }
 
 func (s *APIServer) handleDelete(w http.ResponseWriter, r *http.Request) error {
 	if r.Method != "DELETE" {
-		return fmt.Errorf(r.Method, "method not allowed for deleting")
+		return WriteJSON(w, http.StatusMethodNotAllowed, nil)
 	}
 
 	err := JWTAuth(w, r, s.database)
@@ -229,14 +230,42 @@ func (s *APIServer) handleDelete(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(typ, id)
 
 	delErr := s.database.Delete(typ, id)
 	if delErr != nil {
 		return WriteJSON(w, http.StatusBadRequest, ServerResponse{Resp: delErr.Error()})
 	}
 
-	return nil
+	return WriteJSON(w, http.StatusOK, "succesfully deleted")
+}
+
+func (s *APIServer) handlePatch(w http.ResponseWriter, r *http.Request) error {
+	if r.Method != "PATCH" {
+		return WriteJSON(w, http.StatusMethodNotAllowed, nil)
+	}
+
+	err := JWTAuth(w, r, s.database)
+	if err != nil {
+		return WriteJSON(w, http.StatusUnauthorized, nil)
+	}
+
+	typ := mux.Vars(r)["type"]
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		return err
+	}
+
+	req := new(PatchRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		return err
+	}
+
+	patchErr := s.database.Update(req.Input1, req.Input2, typ, id)
+	if patchErr != nil {
+		return WriteJSON(w, http.StatusBadRequest, nil)
+	}
+	
+	return WriteJSON(w, http.StatusOK, "succesfully updated")
 }
 
 // Helper functions
@@ -255,13 +284,6 @@ func makeHTTPHandleFunc(f ApiFunc) http.HandlerFunc {
 			WriteJSON(w, http.StatusBadRequest, ApiError{Error: err.Error()})
 		}
 	}
-}
-
-func getPath(r *http.Request, pathInput string) (string, error) {
-	inputStr := mux.Vars(r)[pathInput]
-	
-	
-	return inputStr, nil
 }
 
 func (a *Account) ValidatePassword(pw string) bool {

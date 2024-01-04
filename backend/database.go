@@ -373,6 +373,39 @@ func (s *PostgresStore) Delete(typ string, id int) error {
 	return nil
 }
 
+func (s *PostgresStore) Update(input1, input2, typ string, id int) error {
+	tquery := (`
+	UPDATE threads
+	SET title = $1, tag = $2
+	WHERE threadid = $3
+	`)
+	pquery := (`
+	UPDATE posts
+	SET title = $1, content = $2
+	WHERE postid = $3
+	`)
+	cquery := (`
+	UPDATE comments
+	SET content = $1
+	WHERE commentid = $2
+	`)
+
+	var err error
+	switch {
+		case typ == "thread":
+			_, err = s.db.Query(tquery, input1, input2, id)
+		case typ == "post":
+			_, err = s.db.Query(pquery, input1, input2, id)
+		case typ == "comment":
+			_, err = s.db.Query(cquery, input1, id)
+	}
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // helpers
 func retrieveID (r *sql.Rows, mem any) error {
 	for r.Next() {

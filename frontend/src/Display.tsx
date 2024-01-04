@@ -1,10 +1,10 @@
-import { ClassNames } from '@emotion/react';
-import { Link } from 'react-router-dom';
-import { useParams } from 'react-router-dom';
-import { Type } from 'typescript';
+import { Link, Navigate } from 'react-router-dom';
+import { handleDelete, handlePatch } from './Edit';
+import {EditThread} from './Edit';
+import { redirect } from 'react-router-dom';
 
  
-export interface content {
+interface content {
     id: number,
     username: string,
     created: string,
@@ -24,37 +24,11 @@ export interface comment extends content {
     content: string,
 }
 
-export const handleDelete = (url: string, type: string, id: number) => {
-    //console.log(String.prototype.concat(url, '/delete/', type, '/', id.toString())
-    if (window.confirm("Are you sure you want to delete this?")) {
-        fetch(
-            String.prototype.concat(url, '/delete/', type, '/', id.toString()), { 
-            method: 'DELETE',
-            headers: { 
-                "Content-Type": "application/json",
-                "Accept": "application/json", },
-            credentials: 'include',
-        }).then((resp) => {
-            if (resp.ok) {
-                window.location.href = "/account"  
-            } else if (resp.status === 401) {
-                console.log ("Log in this account to perform this action")
-                window.location.href = "/login"
-            } else {
-                console.log ("Error deleting")
-                window.location.reload()
-            }
-        })
-    } else {
-        console.log("Delete cancelled")
-    }
-}
-
 export const DisplayThreads = ({
-    url, list, allowDel}: {
+    url, list, allowEdit}: {
         url: string,
         list: Array<thread>;
-        allowDel: boolean;
+        allowEdit: boolean;
 }) => {
     return (    
         <div className="list">
@@ -67,7 +41,22 @@ export const DisplayThreads = ({
                     <h4>by { elem.username } on {elem.created}</h4>
                 </Link>
                 <h5>
-                    { allowDel && ( <button onClick={()=> handleDelete(url,"thread", elem.id)}>Delete</button> ) }
+                    { allowEdit && (
+                        <div>
+                            <button onClick={()=> handleDelete(url,"thread", elem.id)}>
+                                Delete
+                            </button> 
+                            <Link to = {{
+                                pathname: `/patch/thread/`,
+                                state: {title: elem.title,
+                                        tag: elem.tag,}
+                            }}>
+                                <button>
+                                    Edit
+                                </button> 
+                            </Link>
+                        </div>
+                    ) }
                 </h5>                  
                 </div>
                 )
