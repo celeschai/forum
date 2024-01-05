@@ -34,9 +34,7 @@ function App() {
 
               <Route path="/account" element = {<Account url={hosturl} />} />
 
-              <Route 
-                path="/patch/thread/:id" 
-                element = {<EditThread url = {hosturl}/>} />
+              <Route path="/thread/:id" element = {<EditThread url = {hosturl}/>} />
 
               <Route path="/threadposts/:id" element = {<ThreadPosts url={hosturl} />} />
 

@@ -17,6 +17,7 @@ func NewPostgressStore() (*PostgresStore, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if err := db.Ping(); err != nil {
 		return nil, err
 	}
@@ -251,6 +252,35 @@ func (s *PostgresStore) GetPostsByThreadID(id int) ([]*Post, error) {
 	return ScanPosts(rows)
 }
 
+func (s *PostgresStore) GetPostByPostID(id int) ([]*Post, error) {
+	query := (`
+	SELECT * FROM posts
+	WHERE postid = $1
+	`)
+
+	row, err := s.db.Query(query, id)
+	if err != nil {
+		return nil, err
+	}
+	
+	return ScanPosts(row)
+}
+
+func (s *PostgresStore) GetCommentsByPostID(id int) ([]*Comment, error) {
+	query := (`
+	SELECT * FROM comments
+	WHERE postid = $1
+	ORDER BY created DESC
+	`)
+
+	rows, err := s.db.Query(query, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return ScanComments(rows)
+}
+
 func (s *PostgresStore) GetThreadPosts(id int) (map[string]interface{}, error) {
 	thread, err := s.GetThreadByThreadID(id)
 	if err != nil {
@@ -270,7 +300,21 @@ func (s *PostgresStore) GetThreadPosts(id int) (map[string]interface{}, error) {
 }
 
 func (s *PostgresStore) GetPostComments(id int) (map[string]interface{}, error) {
-	return nil, nil
+	post, err := s.GetPostByPostID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	comments, err := s.GetCommentsByPostID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	m := make(map[string]interface{})
+	m["post"] = post
+	m["comments"] = comments
+
+	return m, nil
 }
 
 func (s *PostgresStore) GetThreadsByUser(userName string) ([]*Thread, error) {
@@ -318,6 +362,88 @@ func (s *PostgresStore) GetCommentsByUser(userName string) ([]*Comment, error) {
 	return ScanComments(rows)
 }
 
+func (s *PostgresStore) GetThreadByID(id int) ([]*Thread, error) {
+	query := (`
+	SELECT * FROM threads
+	WHERE threadid = $1
+	`)
+
+	rows, err := s.db.Query(query, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return ScanThreads(rows)
+}
+
+func (s *PostgresStore) GetPostByID(id int) ([]*Post, error) {
+	query := (`
+	SELECT * FROM posts
+	WHERE postid = $1
+	`)
+
+	rows, err := s.db.Query(query, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return ScanPosts(rows)
+}
+
+func (s *PostgresStore) GetCommentByID(id int) ([]*Comment, error) {
+	query := (`
+	SELECT * FROM comments
+	WHERE commentid = $1
+	`)
+
+	rows, err := s.db.Query(query, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return ScanComments(rows)
+}
+
+func (s *PostgresStore) GetUser(typ string, id int) (*string, error) {
+	tquery := (`
+	SELECT username FROM threads
+	WHERE threadid = $1 
+	`)
+	pquery := (`
+	SELECT username FROM posts
+	WHERE postid = $1
+	`)
+	cquery := (`
+	SELECT username FROM comments
+	WHERE commentid = $1
+	`)
+
+	var Q string
+	switch {
+		case typ == "thread":
+			Q = tquery
+		case typ == "post":
+			Q = pquery
+		case typ == "comment":
+			Q = cquery
+	}
+
+	row, err := s.db.Query(Q, id)
+	if err != nil {
+		return nil, err
+	}
+
+	user := new(string)
+	if row.Next() {
+		err := row.Scan(user)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return user, nil
+}
+
 func (s *PostgresStore) GetAccUploads(userName string) (map[string]interface{}, error) {
 	threads, err := s.GetThreadsByUser(userName)
 	if err != nil {
@@ -341,6 +467,8 @@ func (s *PostgresStore) GetAccUploads(userName string) (map[string]interface{}, 
 
 	return m, nil
 }
+
+
 
 func (s *PostgresStore) Delete(typ string, id int) error {
 	tquery := (`
@@ -370,6 +498,8 @@ func (s *PostgresStore) Delete(typ string, id int) error {
 	if err != nil {
 		return err
 	}
+
+	fmt.Println("deleted")
 	return nil
 }
 
@@ -391,18 +521,20 @@ func (s *PostgresStore) Update(input1, input2, typ string, id int) error {
 	`)
 
 	var err error
-	switch {
-		case typ == "thread":
+	switch typ{
+		case "thread":
 			_, err = s.db.Query(tquery, input1, input2, id)
-		case typ == "post":
+		case "post":
 			_, err = s.db.Query(pquery, input1, input2, id)
-		case typ == "comment":
+		case "comment":
 			_, err = s.db.Query(cquery, input1, id)
 	}
 
 	if err != nil {
 		return err
 	}
+
+	fmt.Println("updated")
 	return nil
 }
 

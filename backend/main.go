@@ -21,6 +21,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer data.db.Close()
 	
 	if err := data.Init(); err != nil {
 		log.Fatal(err)

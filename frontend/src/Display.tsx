@@ -1,8 +1,5 @@
 import { Link, Navigate } from 'react-router-dom';
-import { handleDelete, handlePatch } from './Edit';
-import {EditThread} from './Edit';
-import { redirect } from 'react-router-dom';
-
+import { handleDelete, handlePatch } from './handlers';
  
 interface content {
     id: number,
@@ -30,6 +27,8 @@ export const DisplayThreads = ({
         list: Array<thread>;
         allowEdit: boolean;
 }) => {
+
+
     return (    
         <div className="list">
         {list.map(
@@ -46,17 +45,13 @@ export const DisplayThreads = ({
                             <button onClick={()=> handleDelete(url,"thread", elem.id)}>
                                 Delete
                             </button> 
-                            <Link to = {{
-                                pathname: `/patch/thread/`,
-                                state: {title: elem.title,
-                                        tag: elem.tag,}
-                            }}>
+                            <Link to = {("/patch/thread/").concat(String(elem.id))}>
                                 <button>
                                     Edit
                                 </button> 
                             </Link>
                         </div>
-                    ) }
+                    )}
                 </h5>                  
                 </div>
                 )

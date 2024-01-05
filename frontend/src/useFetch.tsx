@@ -5,7 +5,6 @@ const useFetch = (url: string) => {
   const [data, setData] = useState(null);
   const [isPending, setIsPending] = useState(true);
   const [error, setError] = useState(null);
-  console.log(url);
 
   useEffect(() => {
     const abortCont = new AbortController();
@@ -18,10 +17,13 @@ const useFetch = (url: string) => {
           signal: abortCont.signal 
         })
       .then(res => {
-        if (!res.ok) { // error coming back from server
+        if (res.status === 401) {
+          throw Error('Log in to this account to perform this action')
+        } else if (!res.ok) { // error coming back from server
           throw Error('could not fetch the data for that resource');
-        } 
-        return res.json();
+        } else {
+          return res.json();
+        }
       })
       .then(data => {
         setIsPending(false);
@@ -42,7 +44,6 @@ const useFetch = (url: string) => {
     return () => abortCont.abort();
   }, [url])
 
-  console.log(data);
   return { data, isPending, error };
 }
  

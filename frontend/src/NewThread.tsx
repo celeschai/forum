@@ -23,8 +23,11 @@ const NewThread = ({url}:{url:string}) => {
         .then((stat) => {
           if (response.status === 200) {
             window.location.href = "/feed/latest";
+          } else if (response.status === 401) {
+            throw Error("Login required")
           } else {
             console.log(stat.resp);
+            throw Error("Something went wrong")
           }
       
     }))}

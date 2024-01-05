@@ -80,6 +80,7 @@ type Database interface {
 	GetAccountByUserName(string) (*Account, error)
 	GetAccountByEmail(string) (*Account, error)
 	GetAccUploads(string) (map[string]interface{}, error)
+	GetUser(typ string, id int) (*string, error)
 	//UpdateAccount(*Account) error
 	//DeleteAccountByID(int) error
 
@@ -89,6 +90,7 @@ type Database interface {
 	// DeleteThread(*Thread) error - maybe cannot delete threads
 	GetThreadPosts(int) (map[string]interface{}, error)
 	GetThreadsByUser(userName string) ([]*Thread, error)
+	GetThreadByID(id int) ([]*Thread, error)
 
 	//storePosts(*Post, method) error
 	CreatePost(*Post) error
@@ -96,11 +98,13 @@ type Database interface {
 	// EditPost(*Post) error +++
 	GetPostComments(id int) (map[string]interface{}, error)
 	GetPostsByUser(userName string) ([]*Post, error)
+	GetPostByID(id int) ([]*Post, error)
 
 	//storeComments(*Comment, method) error
 	CreateComment(*Comment) error
 	// DeleteComment(*Comment) error
 	// EditComment(*Comment) error +++
+	GetCommentByID(id int) ([]*Comment, error)
 
 	Delete(typ string, id int) error
 	Update(input1, input2, typ string, id int) error
