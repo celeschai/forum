@@ -9,7 +9,7 @@ const Navbar = () => {
             <div className="links">
                 <Link to="/feed/latest">Feed</Link>
                 <Link to="/account">Account</Link>
-                <Link to="/newthread" style={{ 
+                <Link to="/new/thread" style={{ 
                 color: 'white', 
                 backgroundColor: '#f1356d',
                 borderRadius: '8px' 

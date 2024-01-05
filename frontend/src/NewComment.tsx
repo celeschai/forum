@@ -1,56 +1,29 @@
 import { FormEvent, useState } from "react";
-import { redirect } from "react-router-dom";
-import { hosturl } from "./App";
+import { handlePost } from "./handlers";
 
-const NewComment = () => {
-  const [title, setTitle] = useState('');
-  const [tag, setTag] = useState('');
-  const [author, setAuthor] = useState('mario');
-  //const navigate = useNavigate();
-
+const NewComment = ({url, postid}: {url: string, postid: string}) => {
+  const [comment, setComment] = useState('');
+ 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     const data = { 
-      username: author, 
-      title: title, 
-      tag: tag, 
+      postid: postid,
+      content: comment
     };
 
-    fetch("http://localhost:" + hosturl + "/new/comment", {
-      method: 'POST',
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    }).then(() => {
-      redirect("/feed");
-    })
+    handlePost(url, "/new/comment", data, "/postcomments/".concat(postid))
   }
 
   return (
-    <div className="create">
-      <h2>Add a New Blog</h2>
+    <div className="add">
+      <h2>Add a New Comment</h2>
       <form onSubmit={handleSubmit}>
-        <label>Thread title:</label>
-        <input 
-          type="text" 
+        <textarea 
           required 
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
         />
-        <label>Your Username:</label>
-        <textarea
-          required
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
-        ></textarea>
-        <label>Blog author:</label>
-        <select
-          value={tag}
-          onChange={(e) => setTag(e.target.value)}
-        >
-          <option value="ut">University Town</option>
-          <option value="soc">School of Computing</option>
-        </select>
-        <button>Add Blog</button>
+        <button>Add Comment</button>
       </form>
     </div>
   );

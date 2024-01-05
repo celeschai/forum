@@ -9,8 +9,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
-	"golang.org/x/crypto/bcrypt"
-	//"golang.org/x/tools/go/analysis/passes/nilfunc"
 )
 
 func (s *APIServer) Run() {
@@ -19,13 +17,12 @@ func (s *APIServer) Run() {
 	router.HandleFunc("/home", makeHTTPHandleFunc(s.handleJWT))
 	router.HandleFunc("/login", makeHTTPHandleFunc(s.handleLogin))
 	router.HandleFunc("/signup", makeHTTPHandleFunc(s.handleSignup))
+	router.HandleFunc("/signout", makeHTTPHandleFunc(s.handleSignOut))
 	router.HandleFunc("/account", makeHTTPHandleFunc(s.handleAccount))
-
 	router.HandleFunc("/feed/{tag}", makeHTTPHandleFunc(s.handleFeed))
-	router.HandleFunc("/new/{type}", makeHTTPHandleFunc(s.handleNewThread))
-
+	
+	router.HandleFunc("/new/{type}", makeHTTPHandleFunc(s.handleCreateNew))
 	router.HandleFunc("/parentchild/{type}/{id}", makeHTTPHandleFunc(s.handleGetParentChild))
-
 	router.HandleFunc("/{type}/{id}", makeHTTPHandleFunc(s.handleUserContent))
 
 	log.Println("JSON API server running on port", s.listenAddr)
@@ -109,6 +106,13 @@ func (s *APIServer) handleSignup(w http.ResponseWriter, r *http.Request) error {
 	return WriteJSON(w, http.StatusOK, ServerResponse{Resp: "succesful signup"})
 }
 
+func (s *APIServer) handleSignOut(w http.ResponseWriter, r *http.Request) error {
+
+	deleteCookie(w, "jwtToken")
+
+	return WriteJSON(w, http.StatusOK, ServerResponse{Resp: "succesfully signed out"})
+}
+
 func (s *APIServer) handleAccount(w http.ResponseWriter, r *http.Request) error {
 	err := JWTAuth(w, r, s.database)
 	if err != nil {
@@ -177,7 +181,7 @@ func (s *APIServer) handleGetParentChild(w http.ResponseWriter, r *http.Request)
 	return WriteJSON(w, http.StatusNotFound, nil)
 }
 
-func (s *APIServer) handleNewThread(w http.ResponseWriter, r *http.Request) error {
+func (s *APIServer) handleCreateNew(w http.ResponseWriter, r *http.Request) error {
 	if r.Method != "POST" {
 		return WriteJSON(w, http.StatusMethodNotAllowed, nil)
 	}
@@ -187,16 +191,31 @@ func (s *APIServer) handleNewThread(w http.ResponseWriter, r *http.Request) erro
 		return WriteJSON(w, http.StatusUnauthorized, ServerResponse{Resp: err.Error()})
 	}
 
-	req := new(Thread)
-	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-		return err
-	}
-
 	cookie, cookerr := r.Cookie("userName")
 	if cookerr != nil {
 		return err
 	}
+
 	username := cookie.Value
+	typ := mux.Vars(r)["type"]
+
+	switch typ {
+	case "thread":
+		return s.handleNewThread(w, r, username)
+	case "post":
+		return s.handleNewPost(w, r, username)
+	case "comment":
+		return s.handleNewComment(w, r, username)
+	}
+
+	return nil
+}
+
+func (s *APIServer) handleNewThread(w http.ResponseWriter, r *http.Request, username string) error {
+	req := new(CreateThreadRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		return err
+	}
 
 	thread, err := NewThread(req.Title, username, req.Tag)
 	if err != nil {	
@@ -210,6 +229,45 @@ func (s *APIServer) handleNewThread(w http.ResponseWriter, r *http.Request) erro
 
 	return WriteJSON(w, http.StatusOK, thread)
 }
+
+func (s *APIServer) handleNewPost(w http.ResponseWriter, r *http.Request, username string) error {
+	req := new(CreatePostRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		return err
+	}
+
+	post, err := NewPost(req.ThreadID, username, req.Title, req.Content)
+	if err != nil {	
+		return err
+	}
+
+	err = s.database.CreatePost(post)
+	if err != nil {
+		return err
+	}
+
+	return WriteJSON(w, http.StatusOK, post)
+}
+
+func (s *APIServer) handleNewComment(w http.ResponseWriter, r *http.Request, username string) error {
+	req := new(CreateCommentRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		return err
+	}
+
+	comment, err := NewComment(req.PostID, username, req.Content)
+	if err != nil {	
+		return err
+	}
+
+	err = s.database.CreateComment(comment)
+	if err != nil {
+		return err
+	}
+
+	return WriteJSON(w, http.StatusOK, comment)
+}
+
 
 func (s *APIServer) handleUserContent(w http.ResponseWriter, r *http.Request) error {
 	JWTerr := JWTAuth(w, r, s.database)
@@ -237,44 +295,6 @@ func (s *APIServer) handleUserContent(w http.ResponseWriter, r *http.Request) er
 	if user != *author {
 		return WriteJSON(w, http.StatusUnauthorized, "login required")
 	}
-
-	// switch typ {
-	// 	case "thread": {
-	// 		thread, err := s.database.GetThreadByID(id)
-	// 			if err != nil { 
-	// 				return WriteJSON(w, http.StatusBadGateway, "please retry") 
-	// 			}
-	// 			if thread[0].UserName != user { 
-	// 				return WriteJSON(w, http.StatusUnauthorized, "login required")
-	// 			}
-	// 			if r.Method == "GET" {
-	// 				return WriteJSON(w, http.StatusOK, thread[0])
-	// 			}
-	// 	}
-	// 	case "post": {
-	// 		post, err := s.database.GetPostByID(id)
-	// 			if err != nil { 
-	// 				return WriteJSON(w, http.StatusBadGateway, "please retry") 
-	// 			}
-	// 			if post[0].UserName != user { 
-	// 				return WriteJSON(w, http.StatusUnauthorized, "login required")
-	// 			}
-	// 			if r.Method == "GET" {
-	// 				return WriteJSON(w, http.StatusOK, post[0])
-	// 			}
-	// 	}
-	// 	case "comment": {
-	// 		comment, err := s.database.GetCommentByID(id)
-	// 			if err != nil { 
-	// 				return WriteJSON(w, http.StatusBadGateway, "please retry") 
-	// 			}
-	// 			if comment[0].UserName != user { 
-	// 				return WriteJSON(w, http.StatusUnauthorized, "login required")
-	// 			}
-	// 	}
-	// 	default:
-	// 		return WriteJSON(w, http.StatusBadRequest, "wrong type")
-	
 
 	switch r.Method {
 		case "GET":
@@ -370,10 +390,6 @@ func makeHTTPHandleFunc(f ApiFunc) http.HandlerFunc {
 	}
 }
 
-func (a *Account) ValidatePassword(pw string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(a.EncryptedPW), []byte(pw))
 
-	return err == nil
-}
 
 

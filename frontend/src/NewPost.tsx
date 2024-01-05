@@ -1,56 +1,38 @@
 import { FormEvent, useState } from "react";
-import { redirect } from "react-router-dom";
-import { hosturl } from "./App";
+import { handlePost } from "./handlers";
 
-const NewPost = () => {
+const NewPost = ({url, threadid}: {url: string, threadid: string}) => {
   const [title, setTitle] = useState('');
-  const [tag, setTag] = useState('');
-  const [author, setAuthor] = useState('mario');
-  //const navigate = useNavigate();
+  const [content, setContent] = useState('');
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     const data = { 
-      username: author, 
+      threadid: threadid,
       title: title, 
-      tag: tag, 
+      content: content, 
     };
 
-    fetch("http://localhost:" + hosturl + "/new/post", {
-      method: 'POST',
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    }).then(() => {
-      redirect("/feed");
-    })
+    handlePost(url, "/new/post", data, "/threadposts/".concat(threadid))
   }
 
   return (
-    <div className="create">
-      <h2>Add a New Blog</h2>
+    <div className="add">
+      <h2>Add a New Post</h2>
       <form onSubmit={handleSubmit}>
-        <label>Thread title:</label>
+        <label>Post title:</label>
         <input 
           type="text" 
           required 
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
-        <label>Your Username:</label>
-        <textarea
-          required
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
-        ></textarea>
-        <label>Blog author:</label>
-        <select
-          value={tag}
-          onChange={(e) => setTag(e.target.value)}
-        >
-          <option value="ut">University Town</option>
-          <option value="soc">School of Computing</option>
-        </select>
-        <button>Add Blog</button>
+        <label>Body</label>
+            <textarea 
+                required 
+                value={content}
+                onChange={(e) => setContent(e.target.value)} />
+        <button>Add Post</button>
       </form>
     </div>
   );

@@ -34,19 +34,19 @@ func (s *PostgresStore) Init() error {
 func (s *PostgresStore) createTables() error {
 	query :=
 		`CREATE TABLE IF NOT EXISTS users(
-			username varchar(50),
-			email varchar(50),
-			encryptedpw varchar(100),
-			created timestamp,
+			username VARCHAR(50),
+			email VARCHAR(50),
+			encryptedpw VARCHAR(100),
+			created TIMESTAMP,
 
 			CONSTRAINT pk_account PRIMARY KEY (username)
 		);
 		CREATE TABLE IF NOT EXISTS threads(
 			threadid int GENERATED ALWAYS AS IDENTITY,
-			title varchar(80),
-			username varchar(50),
-			tag varchar(50),
-			created timestamp,
+			title VARCHAR(80),
+			username VARCHAR(50),
+			tag VARCHAR(50),
+			created TIMESTAMP,
 
 			CONSTRAINT pk_threads PRIMARY KEY (threadid),
 			CONSTRAINT fk_threads_u FOREIGN KEY
@@ -57,13 +57,14 @@ func (s *PostgresStore) createTables() error {
 			postid INT GENERATED ALWAYS AS IDENTITY,
 			threadid INT,
 			title VARCHAR(80),
-			username varchar(50),
+			username c(50),
 			content TEXT,
-			created timestamp,
+			created TIMESTAMP,
 
 			CONSTRAINT pk_posts PRIMARY KEY (postid),
 			CONSTRAINT fk_posts FOREIGN KEY 
-				(threadid) REFERENCES threads(threadid),
+				(threadid) REFERENCES threads(threadid)
+				ON DELETE CASCADE,
 			CONSTRAINT fk_posts_u FOREIGN KEY
 				(username) REFERENCES users(username)
     			ON DELETE CASCADE
@@ -71,9 +72,9 @@ func (s *PostgresStore) createTables() error {
 		CREATE TABLE IF NOT EXISTS comments(
 			commentid INT GENERATED ALWAYS AS IDENTITY,
 			postid INT,
-			username varchar(50),
+			username VARCHAR(50),
 			content TEXT,
-			created timestamp,
+			created TIMESTAMP,
 
 			CONSTRAINT pk_comments PRIMARY KEY (commentid),
 			CONSTRAINT fk_comments FOREIGN KEY
@@ -281,6 +282,7 @@ func (s *PostgresStore) GetCommentsByPostID(id int) ([]*Comment, error) {
 	return ScanComments(rows)
 }
 
+
 func (s *PostgresStore) GetThreadPosts(id int) (map[string]interface{}, error) {
 	thread, err := s.GetThreadByThreadID(id)
 	if err != nil {
@@ -293,8 +295,8 @@ func (s *PostgresStore) GetThreadPosts(id int) (map[string]interface{}, error) {
 	}
 
 	m := make(map[string]interface{})
-	m["thread"] = thread
-	m["posts"] = posts
+	m["parent"] = thread
+	m["child"] = posts
 
 	return m, nil
 }
@@ -305,14 +307,21 @@ func (s *PostgresStore) GetPostComments(id int) (map[string]interface{}, error) 
 		return nil, err
 	}
 
+	threadid := post[0].ThreadID
+	thread, err := s.GetThreadByID(threadid)
+	if err != nil {
+		return nil, err
+	}
+
 	comments, err := s.GetCommentsByPostID(id)
 	if err != nil {
 		return nil, err
 	}
 
 	m := make(map[string]interface{})
-	m["post"] = post
-	m["comments"] = comments
+	m["root"] = thread
+	m["parent"] = post
+	m["child"] = comments
 
 	return m, nil
 }
@@ -624,7 +633,7 @@ func ScanP(row *sql.Rows) (*Post, error) {
 		&p.Title,
 		&p.UserName,
 		&p.Content,
-		&p.Created)
+		&p.Created,)
 	return p, err
 }
 

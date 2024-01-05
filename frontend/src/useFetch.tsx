@@ -18,7 +18,7 @@ const useFetch = (url: string) => {
         })
       .then(res => {
         if (res.status === 401) {
-          throw Error('Log in to this account to perform this action')
+          throw Error('Please log in')
         } else if (!res.ok) { // error coming back from server
           throw Error('could not fetch the data for that resource');
         } else {

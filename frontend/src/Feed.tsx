@@ -11,13 +11,15 @@ const Feed = ({url}: {url: string}) => {
 
     return (
         <div className="threads">
-            <h1>Threads filtered by</h1>
+            <h1>Threads filtered by</h1><br></br>
                 <select value={tag}
                     onChange={(e) => setTag(e.target.value)}>
                     <option value="latest">Latest</option>
                     <option value="University Town">University Town</option>
                     <option value="School of Computing">School of Computing</option>
                 </select>
+                
+                <br></br><br></br>
                 { isPending && <div>Loading...</div> }
                 { error && <div>{ error }</div> }
                 { data && (

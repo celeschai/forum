@@ -29,6 +29,22 @@ type CreateAccountRequest struct {
 	Password string `json:"password"`
 }
 
+type CreateThreadRequest struct {
+	Title    string    `json:"title"`
+	Tag      string    `json:"tag"`
+}
+
+type CreatePostRequest struct {
+	ThreadID int       `json:"threadid"`
+	Title    string    `json:"title"`
+	Content  string    `json:"content"`
+}
+
+type CreateCommentRequest struct {
+	PostID    int `json:"postid"`
+	Content  string    `json:"content"`
+}
+
 // handling API & connection
 type APIServer struct {
 	listenAddr string
@@ -62,8 +78,6 @@ type Post struct {
 type Comment struct {
 	CommentID int `json:"id"`
 	PostID    int `json:"postid"`
-	//ThreadID  int       `json:"threadid"`
-	//Title     string    `json:"title"`
 	UserName string    `json:"username"`
 	Content  string    `json:"content"`
 	Created  time.Time `json:"created"`
@@ -86,24 +100,16 @@ type Database interface {
 
 	GetLatestThreads(string) ([]*Thread, error)
 	CreateThread(*Thread) error
-	// CreateThread(*Thread) error
-	// DeleteThread(*Thread) error - maybe cannot delete threads
 	GetThreadPosts(int) (map[string]interface{}, error)
 	GetThreadsByUser(userName string) ([]*Thread, error)
 	GetThreadByID(id int) ([]*Thread, error)
 
-	//storePosts(*Post, method) error
 	CreatePost(*Post) error
-	// DeletePost(*Post) error
-	// EditPost(*Post) error +++
 	GetPostComments(id int) (map[string]interface{}, error)
 	GetPostsByUser(userName string) ([]*Post, error)
 	GetPostByID(id int) ([]*Post, error)
 
-	//storeComments(*Comment, method) error
 	CreateComment(*Comment) error
-	// DeleteComment(*Comment) error
-	// EditComment(*Comment) error +++
 	GetCommentByID(id int) ([]*Comment, error)
 
 	Delete(typ string, id int) error
@@ -114,4 +120,3 @@ type Database interface {
 type PostgresStore struct {
 	db *sql.DB //easier change of database if need be
 }
-

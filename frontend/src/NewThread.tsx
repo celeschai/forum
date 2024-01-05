@@ -1,4 +1,5 @@
 import { FormEvent, useState } from "react";
+import { handlePost } from "./handlers";
 
 const NewThread = ({url}:{url:string}) => {
   const [title, setTitle] = useState('');
@@ -11,26 +12,8 @@ const NewThread = ({url}:{url:string}) => {
       tag: tag, 
     };
 
-    fetch(url.concat("/new/thread"), {
-      method: 'POST',
-      headers: { 
-        "Content-Type": "application/json",
-        "Accept": "application/json", },
-      credentials: 'include',
-      body: JSON.stringify(data)
-    }).then((response) =>  
-        response.json()
-        .then((stat) => {
-          if (response.status === 200) {
-            window.location.href = "/feed/latest";
-          } else if (response.status === 401) {
-            throw Error("Login required")
-          } else {
-            console.log(stat.resp);
-            throw Error("Something went wrong")
-          }
-      
-    }))}
+    handlePost(url, "/new/thread", data, "feed/latest")
+  }
   
 
   return (
@@ -51,7 +34,7 @@ const NewThread = ({url}:{url:string}) => {
           <option value="University Town">University Town</option>
           <option value="School of Computing">School of Computing</option>
         </select>
-        <button>Add Blog</button>
+        <button>Add Thread</button>
       </form>
     </div>
   );

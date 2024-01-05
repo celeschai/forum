@@ -34,62 +34,92 @@ export const DisplayThreads = ({
         {list.map(
             (elem: thread) => 
                 (<div className="thread" key={elem.id} >
-                <Link to={`/threadposts/${elem.id}`}>
-                    <h2>{ elem.title }</h2>
-                    <h3>{ elem.tag }</h3>
-                    <h4>by { elem.username } on {elem.created}</h4>
-                </Link>
-                <h5>
-                    { allowEdit && (
-                        <div>
-                            <button onClick={()=> handleDelete(url,"thread", elem.id)}>
-                                Delete
-                            </button> 
-                            <Link to = {("/patch/thread/").concat(String(elem.id))}>
-                                <button>
-                                    Edit
+                    <Link to={`/threadposts/${elem.id}`}>
+                        <h2>{ elem.title }</h2>
+                        <h3>{ elem.tag }</h3>
+                        <h4>by { elem.username } on {elem.created}</h4>
+                    </Link>
+                    <h5>
+                        { allowEdit && (
+                            <div>
+                                <button onClick={()=> handleDelete(url,"thread", elem.id)}>
+                                    Delete
                                 </button> 
-                            </Link>
-                        </div>
-                    )}
-                </h5>                  
-                </div>
-                )
+                                <Link to = {("/thread/").concat(String(elem.id))}>
+                                    <button> Edit </button> 
+                                </Link>
+                            </div>
+                        )}
+                    </h5>                  
+                </div>)
         )}
         </div>
     )
 };
 
-export const DisplayPosts = ({list}: {list: Array<post>}) => {
+export const DisplayPosts = ({
+    url, list, allowEdit}: {
+        url: string,
+        list: Array<post>;
+        allowEdit: boolean;
+}) => {
+
     return (
         <div className="list">
         {list.map(
             (elem: post) => 
-                (<div className="preview" key={elem.id} >
-                <Link to={`/post/${elem.id}`}>
-                    <h2>{ elem.title }</h2>
-                    <p>{ elem.content }</p>
-                    <h3>created on {elem.created}</h3>
-                    <h4>by { elem.username }</h4>                  
-                </Link>
-                </div>
-                )
+                (<div className="post" key={elem.id} >
+                    <Link to={`/postcomments/${elem.id}`}>
+                        <h2>{ elem.title }</h2>
+                        <p>{ elem.content }</p>
+                        <h3>created on { elem.created }</h3>
+                        <h4>by { elem.username }</h4>                  
+                    </Link>
+                    <h5>
+                        { allowEdit && (
+                            <div>
+                                <button onClick={()=> handleDelete(url,"thread", elem.id)}>
+                                    Delete
+                                </button> 
+                                <Link to = {("/post/").concat(String(elem.id))}>
+                                    <button> Edit </button> 
+                                </Link>
+                            </div>
+                        )}
+                    </h5>                  
+                </div>)
         )}
         </div>
     );
 }
 
-export const DisplayComments = ({list}: {list: Array<comment>}) => {
-    return (
+export const DisplayComments = ({
+    url, list, allowEdit}: {
+        url: string,
+        list: Array<comment>;
+        allowEdit: boolean;
+}) => {
+
+    return(
         <div className="comments">
         {list.map(
             (elem: comment) => 
-                (<div className="preview" key={elem.id} >
-                <Link to={`/comment/${elem.id}`}>
-                    <p>{ elem.content }</p>
-                    <h3>created on {elem.created}</h3>
-                    <h4>by { elem.username }</h4>                  
-                </Link>
+                (<div className="comment" key={elem.id} >
+                        <p>{ elem.content }</p>
+                        <h3>created on {elem.created}</h3>
+                        <h4>by { elem.username }</h4>                  
+                    <h5>
+                        { allowEdit && (
+                            <div>
+                                <button onClick={()=> handleDelete(url,"thread", elem.id)}>
+                                    Delete
+                                </button> 
+                                <Link to = {("/comment/").concat(String(elem.id))}>
+                                    <button> Edit </button> 
+                                </Link>
+                            </div>
+                        )}
+                    </h5>    
                 </div>
                 )
         )}

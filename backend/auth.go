@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"net/http"
-	"os")
+	"os"
+	"golang.org/x/crypto/bcrypt"
+)
 
 func JWTAuth(w http.ResponseWriter, r *http.Request, s Database) error {
 	fmt.Println("calling JWT auth middleware")
@@ -78,3 +80,16 @@ func setCookie(w http.ResponseWriter, r *http.Request, name, value string) {
 	http.SetCookie(w, &cookie)
 }
 
+func deleteCookie(w http.ResponseWriter, name string) {
+	cookie := http.Cookie{
+		Name:     name,
+		MaxAge:   -1,
+	}
+	http.SetCookie(w, &cookie)
+}
+
+func (a *Account) ValidatePassword(pw string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(a.EncryptedPW), []byte(pw))
+
+	return err == nil
+}
