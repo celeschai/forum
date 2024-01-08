@@ -24,6 +24,7 @@ func (s *APIServer) Run() {
 	router.HandleFunc("/new/{type}", makeHTTPHandleFunc(s.handleCreateNew))
 	router.HandleFunc("/parentchild/{type}/{id}", makeHTTPHandleFunc(s.handleGetParentChild))
 	router.HandleFunc("/{type}/{id}", makeHTTPHandleFunc(s.handleUserContent))
+	router.HandleFunc("/{like}/{id}", makeHTTPHandleFunc(s.handleLike))
 
 	log.Println("JSON API server running on port", s.listenAddr)
 
@@ -61,10 +62,15 @@ func (s *APIServer) handleLogin(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	acc, err := s.database.GetAccountByEmail(req.Email)
-	switch {
-	case err != nil:
+	if err != nil{
 		return WriteJSON(w, http.StatusUnauthorized, nil)
-	case !acc.ValidatePassword(req.Password):
+	}
+	
+	check, err := acc.ValidatePassword(req.Password)
+	if err != nil{
+		return WriteJSON(w, http.StatusBadRequest, nil)
+	}
+	if !check {
 		return WriteJSON(w, http.StatusUnauthorized, nil)
 	}
 
@@ -121,7 +127,7 @@ func (s *APIServer) handleAccount(w http.ResponseWriter, r *http.Request) error 
 
 	cookie, cookerr := r.Cookie("userName")
 	if cookerr != nil {
-		return err
+		return cookerr
 	}
 	username := cookie.Value
 
@@ -157,6 +163,11 @@ func (s *APIServer) handleGetParentChild(w http.ResponseWriter, r *http.Request)
 	if r.Method != "GET" {
 		return WriteJSON(w, http.StatusMethodNotAllowed, nil)
 	}
+	cookie, cookerr := r.Cookie("userName")
+	if cookerr != nil {
+		return cookerr
+	}
+	user := cookie.Value
 
 	id, err := strconv.Atoi(mux.Vars(r)["id"])
 	if err != nil {
@@ -165,7 +176,7 @@ func (s *APIServer) handleGetParentChild(w http.ResponseWriter, r *http.Request)
 	typ := mux.Vars(r)["type"]
 
 	if typ == "thread" {
-		posts, err := s.database.GetThreadPosts(id)
+		posts, err := s.database.GetThreadPosts(id, user)
 		if err != nil {
 			return WriteJSON(w, http.StatusBadRequest, ServerResponse{Resp: err.Error()})	
 		}
@@ -293,7 +304,7 @@ func (s *APIServer) handleUserContent(w http.ResponseWriter, r *http.Request) er
 	}
 	//Checking for correct User 
 	if user != *author {
-		return WriteJSON(w, http.StatusUnauthorized, "login required")
+		return WriteJSON(w, 500, "login required")
 	}
 
 	switch r.Method {
@@ -322,7 +333,7 @@ func (s *APIServer) handleGet(w http.ResponseWriter, r *http.Request) error {
 			return WriteJSON(w, http.StatusOK, thread[0])
 		}
 	} else if typ == "post" {
-		if post, err := s.database.GetPostByID(id); err != nil {
+		if post, err := s.database.GetPostByPostID(id); err != nil {
 			return WriteJSON(w, http.StatusBadRequest, err.Error())
 		} else {
 			return WriteJSON(w, http.StatusOK, post[0])
@@ -372,6 +383,35 @@ func (s *APIServer) handlePatch(w http.ResponseWriter, r *http.Request) error {
 	}
 	
 	return WriteJSON(w, http.StatusOK, "succesfully updated")
+}
+
+func (s *APIServer) handleLike(w http.ResponseWriter, r *http.Request) error {
+	if r.Method != "POST" {
+		return WriteJSON(w, http.StatusMethodNotAllowed, nil)
+	}
+
+	like := mux.Vars(r)["like"]
+	liked, err := strconv.ParseBool(like) 
+	if err != nil {
+		return err
+	}
+	postid, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		return err
+	}
+
+	userName, ckerr := r.Cookie("userName")
+	if ckerr != nil {
+		return ckerr
+	}
+	user := userName.Value
+
+	dberr := s.database.Like(user, postid, liked)
+	if dberr != nil {
+		return dberr
+	}
+
+	return WriteJSON(w, http.StatusOK, "liked")
 }
 
 // Helper functions

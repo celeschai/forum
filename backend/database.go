@@ -60,6 +60,7 @@ func (s *PostgresStore) createTables() error {
 			username c(50),
 			content TEXT,
 			created TIMESTAMP,
+			likes int,
 
 			CONSTRAINT pk_posts PRIMARY KEY (postid),
 			CONSTRAINT fk_posts FOREIGN KEY 
@@ -83,6 +84,17 @@ func (s *PostgresStore) createTables() error {
 			CONSTRAINT fk_comments_u FOREIGN KEY
 				(username) REFERENCES users(username)
     			ON DELETE CASCADE
+		);
+		CREATE TABLE IF NOT EXISTS likes(
+			username VARCHAR(50),
+			postid INT,
+
+			CONSTRAINT fk_likes_u FOREIGN KEY
+				(username) REFERENCES users(username)
+				ON DELETE CASCADE,
+			CONSTRAINT fk_likes_id FOREIGN KEY
+				(postid) REFERENCES posts(postid)
+				ON DELETE CASCADE
 		);`
 
 	_, err := s.db.Exec(query)
@@ -238,22 +250,39 @@ func (s *PostgresStore) GetThreadByThreadID(id int) ([]*Thread, error) {
 	return ScanThreads(row)
 }
 
-func (s *PostgresStore) GetPostsByThreadID(id int) ([]*Post, error) {
+// func (s *PostgresStore) GetPostsByThreadID(id int) ([]*Post, error) {
+// 	query := (`
+// 	SELECT * FROM posts
+// 	WHERE threadid = $1
+// 	ORDER BY created DESC
+// 	`)
+
+// 	rows, err := s.db.Query(query, id)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	return ScanPosts(rows)
+// }
+
+func (s *PostgresStore) GetPostsByThreadID(id int, user string) ([]*UserLikedPost, error) {
 	query := (`
-	SELECT * FROM posts
-	WHERE threadid = $1
-	ORDER BY created DESC
+	SELECT * FROM posts 
+		LEFT JOIN likes 
+		ON posts.postid = likes.postid 
+		WHERE threadid = $1 AND likes.username = $2
+	
 	`)
 
-	rows, err := s.db.Query(query, id)
+	rows, err := s.db.Query(query, id, user)
 	if err != nil {
 		return nil, err
 	}
 
-	return ScanPosts(rows)
+	return ScanLikedPosts(rows)
 }
 
-func (s *PostgresStore) GetPostByPostID(id int) ([]*Post, error) {
+func (s *PostgresStore) GetPostByPostID(id int) ([]*UserLikedPost, error) {
 	query := (`
 	SELECT * FROM posts
 	WHERE postid = $1
@@ -264,7 +293,7 @@ func (s *PostgresStore) GetPostByPostID(id int) ([]*Post, error) {
 		return nil, err
 	}
 	
-	return ScanPosts(row)
+	return ScanLikedPosts(row)
 }
 
 func (s *PostgresStore) GetCommentsByPostID(id int) ([]*Comment, error) {
@@ -283,13 +312,13 @@ func (s *PostgresStore) GetCommentsByPostID(id int) ([]*Comment, error) {
 }
 
 
-func (s *PostgresStore) GetThreadPosts(id int) (map[string]interface{}, error) {
+func (s *PostgresStore) GetThreadPosts(id int, user string) (map[string]interface{}, error) {
 	thread, err := s.GetThreadByThreadID(id)
 	if err != nil {
 		return nil, err
 	}
 
-	posts, err := s.GetPostsByThreadID(id)
+	posts, err := s.GetPostsByThreadID(id, user)
 	if err != nil {
 		return nil, err
 	}
@@ -383,20 +412,6 @@ func (s *PostgresStore) GetThreadByID(id int) ([]*Thread, error) {
 	}
 
 	return ScanThreads(rows)
-}
-
-func (s *PostgresStore) GetPostByID(id int) ([]*Post, error) {
-	query := (`
-	SELECT * FROM posts
-	WHERE postid = $1
-	`)
-
-	rows, err := s.db.Query(query, id)
-	if err != nil {
-		return nil, err
-	}
-
-	return ScanPosts(rows)
 }
 
 func (s *PostgresStore) GetCommentByID(id int) ([]*Comment, error) {
@@ -547,8 +562,47 @@ func (s *PostgresStore) Update(input1, input2, typ string, id int) error {
 	return nil
 }
 
+func (s *PostgresStore) Like(username string, postid int, like bool) error {
+	likequery := (`
+	SELECT (CASE likes.username WHEN $2 THEN true ELSE false END) as liked FROM likes
+		RIGHT JOIN posts 
+		ON posts.postid = likes.postid 
+		WHERE threadid = $1
+	`)
+
+	unlikequery := (`
+	DELETE FROM likes WHERE
+	username = $1 AND postid = $2;
+	`)
+
+	var err error
+	if like {
+		_,err = s.db.Query(likequery, username, postid)
+	} else {
+		_,err = s.db.Query(unlikequery, username, postid)
+	}
+	if err != nil {
+		return err
+	}
+
+	updatequery := (`
+	UPDATE posts
+	SET likes = (
+		SELECT COUNT(username)
+		FROM likes
+		WHERE postid = $1)
+	`)
+
+	_, uperr := s.db.Query(updatequery, postid)
+	if uperr != nil {
+		return uperr
+	}
+
+	return nil
+}
+
 // helpers
-func retrieveID (r *sql.Rows, mem any) error {
+func retrieveID (r *sql.Rows, mem *int) error {
 	for r.Next() {
 		err2 := r.Scan(mem)
 		if err2 != nil {
@@ -641,6 +695,37 @@ func ScanPosts(row *sql.Rows) ([]*Post, error) {
 	posts := []*Post{}
 	for row.Next() {
 		t, err := ScanP(row)
+		if err != nil {
+			return nil, err
+		}
+		posts = append(posts, t)
+	}	
+	return posts, nil
+}
+
+//should try to extract a list posts liked by current user and compare on frontend in map
+
+func ScanLikedP(row *sql.Rows) (*UserLikedPost, error) {
+	p := new(UserLikedPost)
+	err := row.Scan(
+		&p.PostID,
+		&p.ThreadID,
+		&p.Title,
+		&p.UserName,
+		&p.Content,
+		&p.Created,
+		&p.Liked)
+	if err != nil {
+		return nil, err
+	}
+
+	return p, err
+}
+
+func ScanLikedPosts(row *sql.Rows) ([]*UserLikedPost, error) {
+	posts := []*UserLikedPost{}
+	for row.Next() {
+		t, err := ScanLikedP(row)
 		if err != nil {
 			return nil, err
 		}

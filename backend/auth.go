@@ -88,8 +88,10 @@ func deleteCookie(w http.ResponseWriter, name string) {
 	http.SetCookie(w, &cookie)
 }
 
-func (a *Account) ValidatePassword(pw string) bool {
+func (a *Account) ValidatePassword(pw string) (bool, error) {
 	err := bcrypt.CompareHashAndPassword([]byte(a.EncryptedPW), []byte(pw))
-
-	return err == nil
+	if err != nil{
+		return false, err
+	}
+	return true, nil
 }

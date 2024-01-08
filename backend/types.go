@@ -30,19 +30,19 @@ type CreateAccountRequest struct {
 }
 
 type CreateThreadRequest struct {
-	Title    string    `json:"title"`
-	Tag      string    `json:"tag"`
+	Title string `json:"title"`
+	Tag   string `json:"tag"`
 }
 
 type CreatePostRequest struct {
-	ThreadID int       `json:"threadid"`
-	Title    string    `json:"title"`
-	Content  string    `json:"content"`
+	ThreadID int    `json:"threadid"`
+	Title    string `json:"title"`
+	Content  string `json:"content"`
 }
 
 type CreateCommentRequest struct {
-	PostID    int `json:"postid"`
-	Content  string    `json:"content"`
+	PostID  int    `json:"postid"`
+	Content string `json:"content"`
 }
 
 // handling API & connection
@@ -73,14 +73,26 @@ type Post struct {
 	UserName string    `json:"username"`
 	Content  string    `json:"content"`
 	Created  time.Time `json:"created"`
+	Likes    string    `json:"likes"`
 }
 
-type Comment struct {
-	CommentID int `json:"id"`
-	PostID    int `json:"postid"`
+type UserLikedPost struct {
+	PostID   int       `json:"id"`
+	ThreadID int       `json:"threadid"`
+	Title    string    `json:"title"`
 	UserName string    `json:"username"`
 	Content  string    `json:"content"`
 	Created  time.Time `json:"created"`
+	Likes    string    `json:"likes"`
+	Liked    string    `json:"liked"`
+}
+
+type Comment struct {
+	CommentID int       `json:"id"`
+	PostID    int       `json:"postid"`
+	UserName  string    `json:"username"`
+	Content   string    `json:"content"`
+	Created   time.Time `json:"created"`
 }
 
 type PatchRequest struct {
@@ -88,6 +100,7 @@ type PatchRequest struct {
 	Input2 string `json:"input2"`
 }
 
+// copy over all function signatures
 type Database interface {
 	CreateAccount(*Account) error //check if account exists
 	CheckExistingAcc(acc *CreateAccountRequest) error
@@ -100,20 +113,26 @@ type Database interface {
 
 	GetLatestThreads(string) ([]*Thread, error)
 	CreateThread(*Thread) error
-	GetThreadPosts(int) (map[string]interface{}, error)
+	GetThreadPosts(id int, user string) (map[string]interface{}, error)
 	GetThreadsByUser(userName string) ([]*Thread, error)
 	GetThreadByID(id int) ([]*Thread, error)
 
 	CreatePost(*Post) error
 	GetPostComments(id int) (map[string]interface{}, error)
 	GetPostsByUser(userName string) ([]*Post, error)
-	GetPostByID(id int) ([]*Post, error)
+	GetPostsByThreadID(id int, user string) ([]*UserLikedPost, error)
+	GetPostByPostID(id int) ([]*UserLikedPost, error)
+
+	// ScanLikedP(row *sql.Rows) (*UserLikedPost, error)
+	// ScanLikedPosts(row *sql.Rows) ([]*UserLikedPost, error)
 
 	CreateComment(*Comment) error
 	GetCommentByID(id int) ([]*Comment, error)
 
 	Delete(typ string, id int) error
 	Update(input1, input2, typ string, id int) error
+	Like(username string, postid int, like bool) error
+	//IsLiked(username string) ([]*int, error)
 }
 
 // check connection: nc -vz localhost 5432
