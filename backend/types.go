@@ -35,13 +35,13 @@ type CreateThreadRequest struct {
 }
 
 type CreatePostRequest struct {
-	ThreadID int    `json:"threadid"`
+	ThreadID string    `json:"threadid"`
 	Title    string `json:"title"`
 	Content  string `json:"content"`
 }
 
 type CreateCommentRequest struct {
-	PostID  int    `json:"postid"`
+	PostID  string    `json:"postid"`
 	Content string `json:"content"`
 }
 
@@ -76,16 +76,16 @@ type Post struct {
 	Likes    string    `json:"likes"`
 }
 
-type UserLikedPost struct {
-	PostID   int       `json:"id"`
-	ThreadID int       `json:"threadid"`
-	Title    string    `json:"title"`
-	UserName string    `json:"username"`
-	Content  string    `json:"content"`
-	Created  time.Time `json:"created"`
-	Likes    string    `json:"likes"`
-	Liked    string    `json:"liked"`
-}
+// type Post struct {
+// 	PostID   int       `json:"id"`
+// 	ThreadID int       `json:"threadid"`
+// 	Title    string    `json:"title"`
+// 	UserName string    `json:"username"`
+// 	Content  string    `json:"content"`
+// 	Created  time.Time `json:"created"`
+// 	Likes    string    `json:"likes"`
+// 	Liked    string    `json:"liked"`
+// }
 
 type Comment struct {
 	CommentID int       `json:"id"`
@@ -120,8 +120,8 @@ type Database interface {
 	CreatePost(*Post) error
 	GetPostComments(id int) (map[string]interface{}, error)
 	GetPostsByUser(userName string) ([]*Post, error)
-	GetPostsByThreadID(id int, user string) ([]*UserLikedPost, error)
-	GetPostByPostID(id int) ([]*UserLikedPost, error)
+	GetPostsByThreadID(id int) ([]*Post, error)
+	GetPostByPostID(id int) ([]*Post, error)
 
 	// ScanLikedP(row *sql.Rows) (*UserLikedPost, error)
 	// ScanLikedPosts(row *sql.Rows) ([]*UserLikedPost, error)
@@ -131,7 +131,7 @@ type Database interface {
 
 	Delete(typ string, id int) error
 	Update(input1, input2, typ string, id int) error
-	Like(username string, postid int, like bool) error
+	//Like(username string, postid int, like bool) error
 	//IsLiked(username string) ([]*int, error)
 }
 

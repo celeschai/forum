@@ -1,103 +1,200 @@
-@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,900;1,600;1,700&display=swap');
 
-/* base styles */
+:root {
+  --highlight-colour: #0066ff;
+  --shadow-colour: #f5faff;
+  --main-colour: #00487b;
+  --complementary-colour: #f7b500;
+}
+
+/*base styles*/
+body {
+  font-size: 100%;
+  font-weight: 700;
+}
+
+h1 {
+  font-size: 2.2em;
+  font-weight: 600;
+}
+
+h2 {
+  font-size: 1.8em;
+  font-weight: 500;
+
+}
+
+p {
+  font-size: 1.3em;
+  font-weight: 400;
+}
+
 * {
-  margin: 0;
-  font-family: "Quicksand";
-  color: #333;
+  margin: auto;
+  font-family: 'Caveat';
+  color: var(--main-colour);
 }
+
+/*Navigation bar*/
 .navbar {
-  padding: 20px;
+  padding: 0%;
   display: flex;
-  align-items: center;
-  max-width: 600px;
-  margin: 0 auto;
-  border-bottom: 1px solid #f2f2f2;
+  max-width: 80%;
+  border-bottom: 2px solid var(--shadow-colour);
+  white-space: nowrap;
+  margin: auto;
 }
+
 .navbar h1 {
-  color: #f1356d;
+  color: var(--highlight-colour);
+  font-family: 'Playfair Display';
+  margin-right: auto;
+  padding: 2%;
 }
+
 .navbar .links {
   margin-left: auto;
 }
+
 .navbar a {
-  margin-left: 16px;
+  display: inline-flex;
   text-decoration: none;
-  padding: 6px;
+  padding-top: 1%;
+  padding-bottom: 1%;
+  padding-left: 4%;
+  padding-right: 5%;
 }
+
 .navbar a:hover {
-  color: #f1356d;
-}
-.content {
-  max-width: 600px;
-  margin: 40px auto;
-  padding: 20px;
+  color: var(--shadow-colour);
+  background-color: var(--highlight-colour);
+  border-radius: 10px;
 }
 
-/* blog previews / list */
-.blog-preview {
-  padding: 10px 16px;
-  margin: 20px 0;
-  border-bottom: 1px solid #fafafa;
+/*Feed*/
+.feed {
+  max-width: 70%;
 }
-.blog-preview:hover {
-  box-shadow: 1px 3px 5px rgba(0,0,0,0.1);
+
+.filter h1 {
+  padding: 2%;
+  display: inline-block;
+  vertical-align: middle;
 }
-.blog-preview h2 {
-  font-size: 20px;
-  color: #f1356d;
-  margin-bottom: 8px;
+
+/*dropdown menu for filter*/
+select {
+  background-color: var(--shadow-colour);
+  font-size: 1.8em;
+  font-family: 'Playfair Display';
+  font-weight: 600;
+  color: var(--complementary-colour);
+  border-color: var(--shadow-colour);
+  position: relative;
+  width: 30%;
+  border-radius: 10px;
+  text-align: center;
+  vertical-align: middle;
 }
-.blog-preview a{
+
+select:hover {
+  background-color: var(--complementary-colour);
+  color: var(--shadow-colour);
+}
+
+/*list of threads*/
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 100%;
+  margin: atuo;
+}
+
+.parent {
+  padding: 1.5%;
+  max-width: 100%;
+}
+
+.content {
+  border: 3px solid var(--shadow-colour);
+  padding: 1%;
+  padding-bottom: 2%;
+  border-radius: 5px;
+  margin: auto;
+  box-shadow: 5px 5px var(--shadow-colour);
+  min-width: 300px;
+}
+
+.content h2 {
+  font-family: 'Caveat';
+  color: var(--highlight-colour);
+  font-size: 2.3em;
+  margin: 2%;
+}
+
+.content h3 {
+  font-family: 'Playfair Display';
+  color: var(--complementary-colour);
+  margin: 0.5em;
+  text-align: center;
+  background-color: var(--shadow-colour);
+  border-radius: 5px;
+  text-shadow: rgb(255, 255, 255) 1px 1px 1px;
+}
+
+.content p {
+  color: var(--highlight-colour);
+  padding: 2%;
+}
+
+.content h5 {
+  margin: 1.5%;
+}
+
+.content a {
   text-decoration: none;
 }
 
-/* blog details page */
-.blog-details h2 {
-  font-size: 20px;
-  color: #f1356d;
-  margin-bottom: 10px;
-}
-.blog-details div {
-  margin: 20px 0;
-}
-.blog-details button {
-  background: #f1356d;
-  color: #fff;
-  border: 0;
-  padding: 8px;
-  border-radius: 8px;
-  cursor: pointer;
+.content:hover {
+  background-color: var(--shadow-colour);
+  box-shadow: 2px 3px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* create new blog form */
-.create {
-  max-width: 400px;
-  margin: 0 auto;
-  text-align: center;
+
+/*user account function buttons*/
+button {
+  font-size: 1.5em;
+  background-color: var(--shadow-colour);
+  color: var(--main-colour);
+  padding: 1%;
+  background-color: var(--shadow-colour);
+  border-color: var(--shadow-colour);
+  border-radius: 10px;
+  border-style: solid;
+  margin: 2%;
 }
-.create label {
-  text-align: left;
-  display: block;
+
+button:hover {
+  background-color: white;
+  box-shadow: 2px 3px 10px rgba(0, 0, 0, 0.1);
 }
-.create h2 {
-  font-size: 20px;
-  color: #f1356d;
-  margin-bottom: 30px;
+
+.parentchild {
+  display: flex;
+  max-width: 70%;
+  height: 100%;
+  margin: auto;
 }
-.create input, .create textarea, .create select {
-  width: 100%;
-  padding: 6px 10px;
-  margin: 10px 0;
-  border: 1px solid #ddd;
-  box-sizing: border-box;
-  display: block;
+
+.parent_pc {
+  padding: 10%;
+  float: left;
+  border-right: 4px dotted var(--complementary-colour);
+  margin-right: 10%;
 }
-.create button {
-  background: #f1356d;
-  color: #fff;
-  border: 0;
-  padding: 8px;
-  border-radius: 8px;
-  cursor: pointer;
+
+.child_pc {
+  padding: 10%;
+  float: right;
 }

@@ -8,44 +8,45 @@ import Link from '@mui/material/Link';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import {ThemeProvider } from '@mui/material/styles';
 import { useState } from 'react';
-// TODO remove, this demo shouldn't need to reset the theme.
+import { useTheme } from '@mui/material/styles';
 
 
-const defaultTheme = createTheme();
 
-export default function SignIn({url}: {url: string}) {
+export default function SignIn({ url }: { url: string }) {
+  const theme = useTheme();
   const [result, setResult] = useState("");
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
-      const form = new FormData(event.currentTarget);
-      const data = { email: form.get('email'), password: form.get('password') };
-      
-      fetch(url, {
-          method: "POST",
-          headers: { 
-              "Content-Type": "application/json",
-              "Accept": "application/json", },
-          credentials: 'include',
-          body: JSON.stringify(data),
-      }).then((response) => {
-          if (response.status === 200) {
-              setResult("Success! Redirecting...");
-              window.location.href = "/feed/latest";
-          } else {
-              setResult("Failed to log in, please check your details and try again");
-          }
-      })     
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const data = { email: form.get('email'), password: form.get('password') };
+
+    fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      credentials: 'include',
+      body: JSON.stringify(data),
+    }).then((response) => {
+      if (response.status === 200) {
+        setResult("Success! Redirecting...");
+        window.location.href = "/feed/latest";
+      } else {
+        setResult("Failed to log in, please check your details and try again");
+      }
+    })
       .catch((err: any) => {
-          console.log(err);
+        console.log(err);
       });
   }
 
 
   return (
-    <ThemeProvider theme={defaultTheme}>
+    <ThemeProvider theme={theme}>
       <Container component="main" maxWidth="xs">
         <CssBaseline />
         <Box
@@ -84,11 +85,8 @@ export default function SignIn({url}: {url: string}) {
               id="password"
               autoComplete="current-password"
             />
-            {/* <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
-              label="Remember me"
-            /> */}
             <Button
+              color = "secondary" 
               type="submit"
               fullWidth
               variant="contained"

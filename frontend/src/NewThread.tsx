@@ -3,7 +3,7 @@ import { handlePost } from "./handlers";
 
 const NewThread = ({url}:{url:string}) => {
   const [title, setTitle] = useState('');
-  const [tag, setTag] = useState('');
+  const [tag, setTag] = useState('University Town');
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -12,7 +12,7 @@ const NewThread = ({url}:{url:string}) => {
       tag: tag, 
     };
 
-    handlePost(url, "/new/thread", data, "feed/latest")
+    handlePost(url, "/new/thread", data, "/feed/latest")
   }
   
 

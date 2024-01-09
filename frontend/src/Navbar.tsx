@@ -7,13 +7,11 @@ const Navbar = () => {
         <nav className="navbar">
             <h1>{ title }</h1>
             <div className="links">
-                <Link to="/feed/latest">Feed</Link>
-                <Link to="/account">Account</Link>
-                <Link to="/new/thread" style={{ 
-                color: 'white', 
-                backgroundColor: '#f1356d',
-                borderRadius: '8px' 
-                }}>Create Thread</Link>
+                <h2>
+                <Link to="/feed/latest">Feed </Link>
+                <Link to="/account">Account </Link>
+                <Link to="/new/thread" >Create Thread</Link>
+                </h2>
             </div>
         </nav>
     );

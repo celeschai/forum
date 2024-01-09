@@ -24,7 +24,7 @@ func (s *APIServer) Run() {
 	router.HandleFunc("/new/{type}", makeHTTPHandleFunc(s.handleCreateNew))
 	router.HandleFunc("/parentchild/{type}/{id}", makeHTTPHandleFunc(s.handleGetParentChild))
 	router.HandleFunc("/{type}/{id}", makeHTTPHandleFunc(s.handleUserContent))
-	router.HandleFunc("/{like}/{id}", makeHTTPHandleFunc(s.handleLike))
+	//router.HandleFunc("/{like}/{id}", makeHTTPHandleFunc(s.handleLike))
 
 	log.Println("JSON API server running on port", s.listenAddr)
 
@@ -385,34 +385,34 @@ func (s *APIServer) handlePatch(w http.ResponseWriter, r *http.Request) error {
 	return WriteJSON(w, http.StatusOK, "succesfully updated")
 }
 
-func (s *APIServer) handleLike(w http.ResponseWriter, r *http.Request) error {
-	if r.Method != "POST" {
-		return WriteJSON(w, http.StatusMethodNotAllowed, nil)
-	}
+// func (s *APIServer) handleLike(w http.ResponseWriter, r *http.Request) error {
+// 	if r.Method != "POST" {
+// 		return WriteJSON(w, http.StatusMethodNotAllowed, nil)
+// 	}
 
-	like := mux.Vars(r)["like"]
-	liked, err := strconv.ParseBool(like) 
-	if err != nil {
-		return err
-	}
-	postid, err := strconv.Atoi(mux.Vars(r)["id"])
-	if err != nil {
-		return err
-	}
+// 	like := mux.Vars(r)["like"]
+// 	liked, err := strconv.ParseBool(like) 
+// 	if err != nil {
+// 		return err
+// 	}
+// 	postid, err := strconv.Atoi(mux.Vars(r)["id"])
+// 	if err != nil {
+// 		return err
+// 	}
 
-	userName, ckerr := r.Cookie("userName")
-	if ckerr != nil {
-		return ckerr
-	}
-	user := userName.Value
+// 	userName, ckerr := r.Cookie("userName")
+// 	if ckerr != nil {
+// 		return ckerr
+// 	}
+// 	user := userName.Value
 
-	dberr := s.database.Like(user, postid, liked)
-	if dberr != nil {
-		return dberr
-	}
+// 	dberr := s.database.Like(user, postid, liked)
+// 	if dberr != nil {
+// 		return dberr
+// 	}
 
-	return WriteJSON(w, http.StatusOK, "liked")
-}
+// 	return WriteJSON(w, http.StatusOK, "liked")
+// }
 
 // Helper functions
 func WriteJSON(w http.ResponseWriter, status int, v any) error { //add error so it is compatible with all function signatures

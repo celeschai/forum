@@ -12,12 +12,12 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useState } from 'react';
 import { wait } from '@testing-library/user-event/dist/utils';
+import { useTheme } from '@mui/material/styles';
 
-// TODO remove, this demo shouldn't need to reset the theme.
-
-const defaultTheme = createTheme();
 
 export default function SignUp({url}: {url: string}) {
+  const theme = useTheme();
+  
   const [result, setResult] = useState("");
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -52,7 +52,7 @@ export default function SignUp({url}: {url: string}) {
 
 
   return (
-    <ThemeProvider theme={defaultTheme}>
+    <ThemeProvider theme={theme}>
       <Container component="main" maxWidth="xs">
         <CssBaseline />
         <Box

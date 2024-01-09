@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strconv"
 
 	_ "github.com/lib/pq"
 )
@@ -11,7 +12,7 @@ import (
 // docker run --name forum -e POSTGRES_USER=forumadmin -e POSTGRES_PASSWORD=gossiping -e POSTGRES_DB=forum -p 5432:5432 -d postgres
 
 func NewPostgressStore() (*PostgresStore, error) {
-	connStr := "user=forumadmin dbname=forum password=gossiping sslmode=disable" 
+	connStr := "user=forumadmin dbname=forum password=gossiping sslmode=disable"
 
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
@@ -208,13 +209,13 @@ func (s *PostgresStore) CreateComment(c *Comment) error {
 	return retrieveID(row, &c.CommentID)
 }
 
-func (s *PostgresStore) GetLatestThreads(tag string)([]*Thread, error) {
+func (s *PostgresStore) GetLatestThreads(tag string) ([]*Thread, error) {
 	if tag == "latest" {
 		query := (`
 		SELECT * FROM threads
 		ORDER BY created DESC
 		`)
-		rows, err := s.db.Query(query, )
+		rows, err := s.db.Query(query)
 		if err != nil {
 			return nil, err
 		}
@@ -231,7 +232,7 @@ func (s *PostgresStore) GetLatestThreads(tag string)([]*Thread, error) {
 		if err != nil {
 			return nil, err
 		}
-	
+
 		return ScanThreads(rows)
 	}
 }
@@ -246,43 +247,43 @@ func (s *PostgresStore) GetThreadByThreadID(id int) ([]*Thread, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return ScanThreads(row)
 }
 
-// func (s *PostgresStore) GetPostsByThreadID(id int) ([]*Post, error) {
-// 	query := (`
-// 	SELECT * FROM posts
-// 	WHERE threadid = $1
-// 	ORDER BY created DESC
-// 	`)
-
-// 	rows, err := s.db.Query(query, id)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return ScanPosts(rows)
-// }
-
-func (s *PostgresStore) GetPostsByThreadID(id int, user string) ([]*UserLikedPost, error) {
+func (s *PostgresStore) GetPostsByThreadID(id int) ([]*Post, error) {
 	query := (`
-	SELECT * FROM posts 
-		LEFT JOIN likes 
-		ON posts.postid = likes.postid 
-		WHERE threadid = $1 AND likes.username = $2
-	
+	SELECT * FROM posts
+	WHERE threadid = $1
+	ORDER BY created DESC
 	`)
 
-	rows, err := s.db.Query(query, id, user)
+	rows, err := s.db.Query(query, id)
 	if err != nil {
 		return nil, err
 	}
 
-	return ScanLikedPosts(rows)
+	return ScanPosts(rows)
 }
 
-func (s *PostgresStore) GetPostByPostID(id int) ([]*UserLikedPost, error) {
+// func (s *PostgresStore) GetPostsByThreadID(id int, user string) ([]*Post, error) {
+// 	query := (`
+// 	SELECT * FROM posts 
+// 		LEFT JOIN likes 
+// 		ON posts.postid = likes.postid 
+// 		WHERE threadid = $1 AND likes.username = $2
+	
+// 	`)
+
+// 	rows, err := s.db.Query(query, id, user)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	return ScanLikedPosts(rows)
+// }
+
+func (s *PostgresStore) GetPostByPostID(id int) ([]*Post, error) {
 	query := (`
 	SELECT * FROM posts
 	WHERE postid = $1
@@ -292,8 +293,8 @@ func (s *PostgresStore) GetPostByPostID(id int) ([]*UserLikedPost, error) {
 	if err != nil {
 		return nil, err
 	}
-	
-	return ScanLikedPosts(row)
+
+	return ScanPosts(row)
 }
 
 func (s *PostgresStore) GetCommentsByPostID(id int) ([]*Comment, error) {
@@ -311,14 +312,13 @@ func (s *PostgresStore) GetCommentsByPostID(id int) ([]*Comment, error) {
 	return ScanComments(rows)
 }
 
-
 func (s *PostgresStore) GetThreadPosts(id int, user string) (map[string]interface{}, error) {
 	thread, err := s.GetThreadByThreadID(id)
 	if err != nil {
 		return nil, err
 	}
 
-	posts, err := s.GetPostsByThreadID(id, user)
+	posts, err := s.GetPostsByThreadID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -444,12 +444,12 @@ func (s *PostgresStore) GetUser(typ string, id int) (*string, error) {
 
 	var Q string
 	switch {
-		case typ == "thread":
-			Q = tquery
-		case typ == "post":
-			Q = pquery
-		case typ == "comment":
-			Q = cquery
+	case typ == "thread":
+		Q = tquery
+	case typ == "post":
+		Q = pquery
+	case typ == "comment":
+		Q = cquery
 	}
 
 	row, err := s.db.Query(Q, id)
@@ -492,8 +492,6 @@ func (s *PostgresStore) GetAccUploads(userName string) (map[string]interface{}, 
 	return m, nil
 }
 
-
-
 func (s *PostgresStore) Delete(typ string, id int) error {
 	tquery := (`
 	DELETE FROM threads
@@ -510,12 +508,12 @@ func (s *PostgresStore) Delete(typ string, id int) error {
 
 	var Q string
 	switch {
-		case typ == "thread":
-			Q = tquery
-		case typ == "post":
-			Q = pquery
-		case typ == "comment":
-			Q = cquery
+	case typ == "thread":
+		Q = tquery
+	case typ == "post":
+		Q = pquery
+	case typ == "comment":
+		Q = cquery
 	}
 
 	_, err := s.db.Query(Q, id)
@@ -545,13 +543,13 @@ func (s *PostgresStore) Update(input1, input2, typ string, id int) error {
 	`)
 
 	var err error
-	switch typ{
-		case "thread":
-			_, err = s.db.Query(tquery, input1, input2, id)
-		case "post":
-			_, err = s.db.Query(pquery, input1, input2, id)
-		case "comment":
-			_, err = s.db.Query(cquery, input1, id)
+	switch typ {
+	case "thread":
+		_, err = s.db.Query(tquery, input1, input2, id)
+	case "post":
+		_, err = s.db.Query(pquery, input1, input2, id)
+	case "comment":
+		_, err = s.db.Query(cquery, input1, id)
 	}
 
 	if err != nil {
@@ -562,47 +560,47 @@ func (s *PostgresStore) Update(input1, input2, typ string, id int) error {
 	return nil
 }
 
-func (s *PostgresStore) Like(username string, postid int, like bool) error {
-	likequery := (`
-	SELECT (CASE likes.username WHEN $2 THEN true ELSE false END) as liked FROM likes
-		RIGHT JOIN posts 
-		ON posts.postid = likes.postid 
-		WHERE threadid = $1
-	`)
+// func (s *PostgresStore) Like(username string, postid int, like bool) error {
+// 	likequery := (`
+// 	SELECT (CASE likes.username WHEN $2 THEN true ELSE false END) as liked FROM likes
+// 		RIGHT JOIN posts
+// 		ON posts.postid = likes.postid
+// 		WHERE threadid = $1
+// 	`)
 
-	unlikequery := (`
-	DELETE FROM likes WHERE
-	username = $1 AND postid = $2;
-	`)
+// 	unlikequery := (`
+// 	DELETE FROM likes WHERE
+// 	username = $1 AND postid = $2;
+// 	`)
 
-	var err error
-	if like {
-		_,err = s.db.Query(likequery, username, postid)
-	} else {
-		_,err = s.db.Query(unlikequery, username, postid)
-	}
-	if err != nil {
-		return err
-	}
+// 	var err error
+// 	if like {
+// 		_,err = s.db.Query(likequery, username, postid)
+// 	} else {
+// 		_,err = s.db.Query(unlikequery, username, postid)
+// 	}
+// 	if err != nil {
+// 		return err
+// 	}
 
-	updatequery := (`
-	UPDATE posts
-	SET likes = (
-		SELECT COUNT(username)
-		FROM likes
-		WHERE postid = $1)
-	`)
+// 	updatequery := (`
+// 	UPDATE posts
+// 	SET likes = (
+// 		SELECT COUNT(username)
+// 		FROM likes
+// 		WHERE postid = $1)
+// 	`)
 
-	_, uperr := s.db.Query(updatequery, postid)
-	if uperr != nil {
-		return uperr
-	}
+// 	_, uperr := s.db.Query(updatequery, postid)
+// 	if uperr != nil {
+// 		return uperr
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 // helpers
-func retrieveID (r *sql.Rows, mem *int) error {
+func retrieveID(r *sql.Rows, mem *int) error {
 	for r.Next() {
 		err2 := r.Scan(mem)
 		if err2 != nil {
@@ -675,7 +673,7 @@ func ScanThreads(row *sql.Rows) ([]*Thread, error) {
 			return nil, err
 		}
 		threads = append(threads, t)
-	}	
+	}
 	return threads, nil
 }
 
@@ -687,7 +685,7 @@ func ScanP(row *sql.Rows) (*Post, error) {
 		&p.Title,
 		&p.UserName,
 		&p.Content,
-		&p.Created,)
+		&p.Created)
 	return p, err
 }
 
@@ -699,40 +697,40 @@ func ScanPosts(row *sql.Rows) ([]*Post, error) {
 			return nil, err
 		}
 		posts = append(posts, t)
-	}	
+	}
 	return posts, nil
 }
 
 //should try to extract a list posts liked by current user and compare on frontend in map
 
-func ScanLikedP(row *sql.Rows) (*UserLikedPost, error) {
-	p := new(UserLikedPost)
-	err := row.Scan(
-		&p.PostID,
-		&p.ThreadID,
-		&p.Title,
-		&p.UserName,
-		&p.Content,
-		&p.Created,
-		&p.Liked)
-	if err != nil {
-		return nil, err
-	}
+// func ScanLikedP(row *sql.Rows) (*Post, error) {
+// 	p := new(Post)
+// 	err := row.Scan(
+// 		&p.PostID,
+// 		&p.ThreadID,
+// 		&p.Title,
+// 		&p.UserName,
+// 		&p.Content,
+// 		&p.Created,
+// 		&p.Liked)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	return p, err
-}
+// 	return p, err
+// }
 
-func ScanLikedPosts(row *sql.Rows) ([]*UserLikedPost, error) {
-	posts := []*UserLikedPost{}
-	for row.Next() {
-		t, err := ScanLikedP(row)
-		if err != nil {
-			return nil, err
-		}
-		posts = append(posts, t)
-	}	
-	return posts, nil
-}
+// func ScanLikedPosts(row *sql.Rows) ([]*Post, error) {
+// 	posts := []*Post{}
+// 	for row.Next() {
+// 		t, err := ScanLikedP(row)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		posts = append(posts, t)
+// 	}
+// 	return posts, nil
+// }
 
 func ScanC(row *sql.Rows) (*Comment, error) {
 	c := new(Comment)
@@ -753,7 +751,7 @@ func ScanComments(row *sql.Rows) ([]*Comment, error) {
 			return nil, err
 		}
 		comments = append(comments, c)
-	}	
+	}
 	return comments, nil
 }
 
@@ -776,7 +774,8 @@ func SeedData(s Database) *Account {
 		log.Fatal(err)
 	}
 
-	p, err := NewPost(t.ThreadID, acc.UserName, "samplePostTitle2", "samplePostContent2")
+	tID := strconv.Itoa(t.ThreadID)
+	p, err := NewPost(tID, acc.UserName, "samplePostTitle2", "samplePostContent2")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -784,7 +783,8 @@ func SeedData(s Database) *Account {
 		log.Fatal(err)
 	}
 
-	c, err := NewComment(p.PostID, acc.UserName, "sampleCommentContent2")
+	pID := strconv.Itoa(p.PostID)
+	c, err := NewComment(pID, acc.UserName, "sampleCommentContent2")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -3,6 +3,7 @@ package main
 import (
 	//"fmt"
 	"time"
+	"strconv"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -40,9 +41,14 @@ func NewThread(title, username, tag string) (*Thread, error) {
 	}, nil
 }
 
-func NewPost(threadid int, username string, title, content string) (*Post, error) {
+func NewPost(threadid string, username string, title, content string) (*Post, error) {
+	id, err := strconv.Atoi(threadid)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Post{
-		ThreadID: threadid,
+		ThreadID: id,
 		Title:    title,
 		UserName: username,
 		Content:  content,
@@ -50,9 +56,14 @@ func NewPost(threadid int, username string, title, content string) (*Post, error
 	}, nil
 }
 
-func NewComment(postid int, username string, content string) (*Comment, error) {
+func NewComment(postid string, username string, content string) (*Comment, error) {
+	id, err := strconv.Atoi(postid)
+	if err != nil {
+		return nil, err
+	}
+	
 	return &Comment{
-		PostID:   postid,
+		PostID:   id,
 		UserName: username,
 		Content:  content,
 		Created:  time.Now().UTC(),
