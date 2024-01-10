@@ -17,7 +17,7 @@ const NewPost = ({url, threadid}: {url: string, threadid: string}) => {
   }
 
   return (
-    <div className="add">
+    <div className="create">
       <h2>Add a New Post</h2>
       <form onSubmit={handleSubmit}>
         <label>Post title:</label>

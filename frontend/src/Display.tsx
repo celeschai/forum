@@ -45,8 +45,8 @@ export const DisplayThreads = ({
         <div className="list">
             {list.map(
                 (elem: thread) =>
-                    <div className="parent">
-                        <div className="content" key={elem.id} >
+                    <div className="parent" key={elem.id}>
+                        <div className="content">
                             <Link to={`/threadposts/${elem.id}`}>
                                 <h2>{elem.title}</h2>
                                 <h3> 📍  {elem.tag}</h3>
@@ -54,7 +54,7 @@ export const DisplayThreads = ({
                             </Link>
                             <h5>
                                 {allowEdit && (
-                                    <div className="buttons">
+                                    <div className="edit">
                                         <button onClick={() => handleDelete(url, "/thread", elem.id)}>
                                             🗑️
                                         </button>
@@ -82,8 +82,8 @@ export const DisplayPosts = ({
         <div className="list">
             {list.map(
                 (elem: post) =>
-                    <div className="parent">
-                        <div className="content" key={elem.id} >
+                    <div className="parent" key={elem.id}>
+                        <div className="content">
                             <Link to={`/postcomments/${elem.id}`}>
                                 <h3>{elem.title}</h3>
                                 <p>{elem.content}</p>
@@ -91,12 +91,12 @@ export const DisplayPosts = ({
                             </Link>
                             <h5>
                                 {allowEdit && (
-                                    <div>
-                                        <button onClick={() => handleDelete(url, "thread", elem.id)}>
-                                            Delete
+                                    <div className="edit">
+                                        <button onClick={() => handleDelete(url, "/thread", elem.id)}>
+                                            🗑️
                                         </button>
-                                        <Link to={("/post/").concat(String(elem.id))}>
-                                            <button> Edit </button>
+                                        <Link to={("/thread/").concat(String(elem.id))}>
+                                            <button> ✏️ </button>
                                         </Link>
                                     </div>
                                 )}
@@ -119,23 +119,24 @@ export const DisplayComments = ({
         <div className="list">
             {list.map(
                 (elem: comment) =>
-                (<div className="content" key={elem.id} >
-                    <p>{elem.content}</p>
-                    <h4>by {elem.username} on {timeConverter(elem.created)}</h4>
-                    <h5>
-                        {allowEdit && (
-                            <div>
-                                <button onClick={() => handleDelete(url, "thread", elem.id)}>
-                                    Delete
-                                </button>
-                                <Link to={("/comment/").concat(String(elem.id))}>
-                                    <button> Edit </button>
-                                </Link>
-                            </div>
-                        )}
-                    </h5>
-                </div>
-                )
+                    <div className="parent" key={elem.id}>
+                        <div className="content">
+                            <p>{elem.content}</p>
+                            <h4>by {elem.username} on {timeConverter(elem.created)}</h4>
+                            <h5>
+                                {allowEdit && (
+                                    <div className="edit">
+                                        <button onClick={() => handleDelete(url, "/thread", elem.id)}>
+                                            🗑️
+                                        </button>
+                                        <Link to={("/thread/").concat(String(elem.id))}>
+                                            <button> ✏️ </button>
+                                        </Link>
+                                    </div>
+                                )}
+                            </h5>
+                        </div>
+                    </div>
             )}
         </div>
     );

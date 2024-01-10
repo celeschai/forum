@@ -12,48 +12,26 @@ import Start from './Start';
 import { EditThread } from './EditThread';
 import { EditPost } from './EditPost';
 import { EditComment } from './EditComment';
-import { red } from '@mui/material/colors';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { ThemeOptions } from '@mui/material/styles';
 
-export const themeOptions: ThemeOptions = {
-  typography: {
-    fontFamily: 'Caveat, cursive',
-  },
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#333333',
-    },
-    secondary: {
-      main: '#f1356d',
-    },
-  },
-};
 
 
 export const hosturl: string = "http://localhost:2999";
 
-const theme = createTheme(
-  themeOptions
-);
-
 function App() {
 
   return (
-    <ThemeProvider theme={theme}>
       <Router>
-        <div className="App">
+        <div className="app">
           <Navbar />
 
           <Routes>
             <Route path="" element={<Start url={hosturl.concat("/home")} />} />
 
-            <Route path="/login" element={<SignIn url={hosturl.concat("/login")} />} />
+            <Route path="/login" element={<SignIn url={hosturl.concat("/login")} initialResult={'Login required'} />} />
 
             <Route path="/feed/:tag" element={<Feed url={hosturl} />} />
 
-            <Route path="/signup" element={<SignUp url={hosturl.concat("/signup")} />} />
+            <Route path="/signup" element={<SignUp url={hosturl.concat("/signup")} initialResult={''} />} />
 
             <Route path="/account" element={<Account url={hosturl} />} />
 
@@ -73,7 +51,6 @@ function App() {
           </Routes>
         </div>
       </Router>
-    </ThemeProvider>
   );
 }
 

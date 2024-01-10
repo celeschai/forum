@@ -35,22 +35,22 @@ const User = ({ url, data }: { url: string, data: accountPosts }) => {
         }
     }
     return (
-        <div className="User">
+        <div className="user">
             <h3>You are logged in as: {data["username"]}</h3>
             <button onClick={handleSignOut}>Sign out</button>
 
             <div className="Thread">
-                <h2>Threads created</h2>
+                <h1>Threads created</h1>
                 <DisplayThreads url={url} allowEdit={true} list={data["threads"]} />
             </div>
 
             <div className="Post">
-                <h2>Posts created</h2>
+                <h1>Posts created</h1>
                 <DisplayPosts url={url} allowEdit={true} list={data["posts"]} />
             </div>
 
             <div className="Comment">
-                <h2>Comments created</h2>
+                <h1>Comments created</h1>
                 <DisplayComments url={url} allowEdit={true} list={data["comments"]} />
             </div>
         </div>

@@ -3,9 +3,12 @@
 
 :root {
   --highlight-colour: #0066ff;
-  --shadow-colour: #f5faff;
+  --pastel-colour: #f5faff;
+  --blueshadow-colour: #e5edf6;
+  --greyshadow-colour: #d5d5d5;
   --main-colour: #00487b;
   --complementary-colour: #f7b500;
+  --background--colour: #f1f1f1;
 }
 
 /*base styles*/
@@ -34,27 +37,31 @@ p {
   margin: auto;
   font-family: 'Caveat';
   color: var(--main-colour);
+  text-align: center;
 }
 
 /*Navigation bar*/
 .navbar {
-  padding: 0%;
   display: flex;
-  max-width: 80%;
-  border-bottom: 2px solid var(--shadow-colour);
-  white-space: nowrap;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  border-bottom: 2px solid var(--pastel-colour);
   margin: auto;
+  margin-bottom: 1%;
+  padding: 3%;
 }
 
 .navbar h1 {
+  text-align: left;
   color: var(--highlight-colour);
   font-family: 'Playfair Display';
-  margin-right: auto;
   padding: 2%;
 }
-
-.navbar .links {
-  margin-left: auto;
+.navbar .name{
+  flex: 70%;
+}
+.navbar .links{
+  flex: 30%;
 }
 
 .navbar a {
@@ -67,62 +74,59 @@ p {
 }
 
 .navbar a:hover {
-  color: var(--shadow-colour);
+  color: var(--pastel-colour);
   background-color: var(--highlight-colour);
   border-radius: 10px;
 }
 
 /*Feed*/
 .feed {
-  max-width: 70%;
+  max-width: 85%;
 }
 
 .filter h1 {
   padding: 2%;
-  display: inline-block;
-  vertical-align: middle;
+  display: inline-flex;
+}
+
+.feed .filter select {
+  max-width: 40%;
+  font-size: 1.8em;
 }
 
 /*dropdown menu for filter*/
 select {
-  background-color: var(--shadow-colour);
-  font-size: 1.8em;
+  background-color: var(--pastel-colour);
   font-family: 'Playfair Display';
   font-weight: 600;
   color: var(--complementary-colour);
-  border-color: var(--shadow-colour);
+  border-color: var(--pastel-colour);
   position: relative;
-  width: 30%;
   border-radius: 10px;
-  text-align: center;
-  vertical-align: middle;
 }
 
 select:hover {
   background-color: var(--complementary-colour);
-  color: var(--shadow-colour);
+  color: var(--pastel-colour);
 }
 
 /*list of threads*/
 .list {
   display: flex;
   flex-wrap: wrap;
-  max-width: 100%;
-  margin: atuo;
 }
 
 .parent {
-  padding: 1.5%;
-  max-width: 100%;
+  padding: 2%;
 }
 
 .content {
-  border: 3px solid var(--shadow-colour);
+  border: 3px solid var(--pastel-colour);
   padding: 1%;
   padding-bottom: 2%;
-  border-radius: 5px;
+  border-radius: 10px;
   margin: auto;
-  box-shadow: 5px 5px var(--shadow-colour);
+  box-shadow: 5px 5px 5px var(--blueshadow-colour);
   min-width: 300px;
 }
 
@@ -137,8 +141,7 @@ select:hover {
   font-family: 'Playfair Display';
   color: var(--complementary-colour);
   margin: 0.5em;
-  text-align: center;
-  background-color: var(--shadow-colour);
+  background-color: var(--pastel-colour);
   border-radius: 5px;
   text-shadow: rgb(255, 255, 255) 1px 1px 1px;
 }
@@ -157,7 +160,7 @@ select:hover {
 }
 
 .content:hover {
-  background-color: var(--shadow-colour);
+  background-color: var(--pastel-colour);
   box-shadow: 2px 3px 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -165,36 +168,138 @@ select:hover {
 /*user account function buttons*/
 button {
   font-size: 1.5em;
-  background-color: var(--shadow-colour);
-  color: var(--main-colour);
-  padding: 1%;
-  background-color: var(--shadow-colour);
-  border-color: var(--shadow-colour);
+  background-color: var(--pastel-colour);
+  color: var(--pasten-colour);
+  padding: 0% 2% 0% 1%;
+  border: none;
   border-radius: 10px;
-  border-style: solid;
   margin: 2%;
+  position: relative;
+  box-shadow: 5px 5px 5px var(--greyshadow-colour);
+
 }
 
 button:hover {
+  box-shadow: 5px 5px 10px var(--highlight-colour);
   background-color: white;
-  box-shadow: 2px 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.user .list {
+  max-width: 70%;
+}
+
+.user h1 {
+  font-family: 'Playfair Display';
+  color: var(--main-colour);
+  background-color: var(--pastel-colour);
+  font-size: 2.3em;
+  margin: 2% auto;
+}
+
+.user h3 {
+  font-family: 'Playfair Display';
+  margin-top: 2%;
 }
 
 .parentchild {
   display: flex;
-  max-width: 70%;
-  height: 100%;
-  margin: auto;
+  flex-direction: row;
+  flex-wrap: wrap;
+  max-width: 90%;
+  justify-content: center;
 }
 
 .parent_pc {
-  padding: 10%;
-  float: left;
-  border-right: 4px dotted var(--complementary-colour);
-  margin-right: 10%;
+  flex: 60%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 
 .child_pc {
-  padding: 10%;
-  float: right;
+  flex: 30%;
+}
+
+/*new content templates*/
+.createthread {
+  width: 60%;
+}
+
+.create {
+  padding: 2%;
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+}
+
+.create h2 {
+  margin: 3% auto;
+  font-family: 'Playfair Display';
+  font-weight: 600;
+}
+
+.title {
+  display: flex;
+  flex-direction: column;
+  width: 70%;
+  padding: 1%;
+  margin-bottom: 1%;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  border: 5px solid var(--blueshadow-colour);
+  width: 90%;
+  padding: 3%;
+  box-shadow: 5px 5px 5px var(--greyshadow-colour);
+}
+
+input {
+  border: none;
+  background-color: var(--pastel-colour);
+  border-radius: 10px;
+  font-size: 1.3em;
+  margin: 2% auto;
+  width: 70%;
+}
+
+input::placeholder {
+  color: var(--greyshadow-colour);
+}
+
+label {
+  font-weight: 600;
+  margin: 2%;
+  color: var(--highlight-colour);
+}
+
+.create select {
+  font-size: 1em;
+  margin: 2% auto;
+}
+
+.create button {
+  margin: 3% auto;
+  font-size: 1em;
+  color: var(--pastel-colour);
+  background-color: var(--highlight-colour);
+  border-radius: 5px;
+  margin-top: 5%;
+  box-shadow: none;
+}
+
+.create button:hover {
+  box-shadow: 5px 5px 10px var(--complementary-colour);
+  border: 2px solid white;
+}
+
+textarea {
+  border: none;
+  background-color: var(--pastel-colour);
+  border-radius: 10px;
+  font-size: 1.3em;
+  width: 75%;
+  margin: 2% auto;
 }

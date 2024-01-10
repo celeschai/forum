@@ -29,22 +29,20 @@ export const ThreadPosts = ({ url }: { url: string }) => {
   } = useFetch(String.prototype.concat(url, '/parentchild/thread/', id))
 
   return (
-    <div className="divider">
-      <div className="parentchild">
-        <div className="parent_pc">
-          {isPending && <div>Loading...</div>}
-          {error && <div>{error}</div>}
-          {data && <DisplayThreads url={url} allowEdit={false} list={data['parent']} />}
+    <div className="parentchild">
+      <div className="parent_pc">
+        {isPending && <div>Loading...</div>}
+        {error && <div>{error}</div>}
+        {data && <DisplayThreads url={url} allowEdit={true} list={data['parent']} />}
 
-          <br></br>
+        <br></br>
 
-          {!add && <button onClick={() => setAdd(true)}>Add Post</button>}
-          {add && <NewPost url={url} threadid={id} />}
-        </div>
+        {!add && <button onClick={() => setAdd(true)}>Add Post</button>}
+        {add && <NewPost url={url} threadid={id} />}
+      </div>
 
-        <div className="child_pc">
-          {data && <DisplayPosts url={url} allowEdit={false} list={data['child']} />}
-        </div>
+      <div className="child_pc">
+        {data && <DisplayPosts url={url} allowEdit={false} list={data['child']} />}
       </div>
     </div>
   );
@@ -67,21 +65,22 @@ export const PostComments = ({ url }: { url: string }) => {
       <div className="parent_pc">
         {isPending && <div>Loading...</div>}
         {error && <div>{error}</div>}
-        {data && <DisplayThreads url={url} allowEdit={false} list={data['root']} />}
+        {data && <DisplayThreads url={url} allowEdit={true} list={data['root']} />}
 
-        ↑👆🔝
+        ↑
 
         {isPending && <div>Loading...</div>}
         {error && <div>{error}</div>}
-        {data && <DisplayPosts url={url} allowEdit={false} list={data['parent']} />}
+        {data && <DisplayPosts url={url} allowEdit={true} list={data['parent']} />}
 
         <br></br>
 
         {!add && <button onClick={() => setAdd(true)}>Add Comment</button>}
         {add && <NewComment url={url} postid={id} />}
       </div>
-      <div className="Comment">
-        {data && <DisplayComments url={url} allowEdit={false} list={data['child']} />}
+
+      <div className="child_pc">
+        {data && <DisplayComments url={url} allowEdit={true} list={data['child']} />}
       </div>
     </div>
   );

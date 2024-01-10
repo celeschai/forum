@@ -15,7 +15,7 @@ const NewComment = ({url, postid}: {url: string, postid: string}) => {
   }
 
   return (
-    <div className="add">
+    <div className="create">
       <h2>Add a New Comment</h2>
       <form onSubmit={handleSubmit}>
         <textarea 

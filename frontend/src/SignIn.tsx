@@ -8,15 +8,36 @@ import Link from '@mui/material/Link';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import {ThemeProvider } from '@mui/material/styles';
 import { useState } from 'react';
-import { useTheme } from '@mui/material/styles';
+import { red } from '@mui/material/colors';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeOptions } from '@mui/material/styles';
 
+export const themeOptions: ThemeOptions = {
+  typography: {
+    fontFamily: 'Caveat, cursive',
+  },
+  palette: {
+    mode: 'light',
+    primary: {
+      main: '##00487b',
+    },
+    secondary: {
+      main: '#0066ff',
+    },
+    error: {
+      main: red.A400,
+    }
+  },
+};
 
-
-export default function SignIn({ url }: { url: string }) {
-  const theme = useTheme();
-  const [result, setResult] = useState("");
+export default function SignIn({ url, initialResult }:
+  {
+    url: string;
+    initialResult: string;
+  }) {
+  const theme = createTheme(themeOptions);
+  const [result, setResult] = useState(initialResult);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -60,10 +81,12 @@ export default function SignIn({ url }: { url: string }) {
           <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
             <LockOutlinedIcon />
           </Avatar>
-          <Typography component="h1" variant="h5">
+          <Typography component="h1" variant="h3">
             Sign in
           </Typography>
-          <h5>{result}</h5>
+          <Typography variant="h5" color="error.main">
+            {result}
+          </Typography>
           <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
             <TextField
               margin="normal"
@@ -86,7 +109,7 @@ export default function SignIn({ url }: { url: string }) {
               autoComplete="current-password"
             />
             <Button
-              color = "secondary" 
+              color="secondary"
               type="submit"
               fullWidth
               variant="contained"

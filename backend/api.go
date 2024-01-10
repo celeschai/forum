@@ -300,22 +300,22 @@ func (s *APIServer) handleUserContent(w http.ResponseWriter, r *http.Request) er
 	user := userName.Value
 	author, err := s.database.GetUser(typ, id)
 	if err != nil {
-		return WriteJSON(w, http.StatusBadGateway, "something went wrong")
+		return WriteJSON(w, http.StatusInternalServerError, "something went wrong")
 	}
 	//Checking for correct User 
 	if user != *author {
-		return WriteJSON(w, 500, "login required")
-	}
-
-	switch r.Method {
-		case "GET":
-			return s.handleGet(w, r)
-		case "DELETE":
-			return s.handleDelete(w, r)
-		case "PATCH":
-			return s.handlePatch(w, r)
-		default:
-			return WriteJSON(w, http.StatusMethodNotAllowed, nil)
+		return WriteJSON(w, http.StatusUnauthorized, "login required")
+	} else {
+		switch r.Method {
+			case "GET":
+				return s.handleGet(w, r)
+			case "DELETE":
+				return s.handleDelete(w, r)
+			case "PATCH":
+				return s.handlePatch(w, r)
+			default:
+				return WriteJSON(w, http.StatusMethodNotAllowed, nil)
+		}
 	}
 }
 
@@ -354,12 +354,12 @@ func (s *APIServer) handleDelete(w http.ResponseWriter, r *http.Request) error {
 	typ := mux.Vars(r)["type"]
 	id, err := strconv.Atoi(mux.Vars(r)["id"])
 	if err != nil {
-		return err
+		return WriteJSON(w, http.StatusBadRequest, err.Error())
 	}
 
 	delErr := s.database.Delete(typ, id)
 	if delErr != nil {
-		return WriteJSON(w, http.StatusBadRequest, ServerResponse{Resp: delErr.Error()})
+		return WriteJSON(w, http.StatusInternalServerError, nil)
 	}
 
 	return WriteJSON(w, http.StatusOK, "succesfully deleted")
