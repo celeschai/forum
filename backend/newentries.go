@@ -32,7 +32,7 @@ func NewAccount(username, email, password string) (*Account, error) {
 	}, nil
 }
 
-func NewThread(title, username, tag string) (*Thread, error) {
+func NewThread(username, title, tag string) (*Thread, error) {
 	return &Thread{
 		Title:    title,
 		UserName: username,
@@ -41,7 +41,7 @@ func NewThread(title, username, tag string) (*Thread, error) {
 	}, nil
 }
 
-func NewPost(threadid string, username string, title, content string) (*Post, error) {
+func NewPost(threadid, username, title, content string) (*Post, error) {
 	id, err := strconv.Atoi(threadid)
 	if err != nil {
 		return nil, err

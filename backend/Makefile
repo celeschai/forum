@@ -1,10 +1,8 @@
 build: 
-	@go build -o bin/backend
+	@go build -o bin
 
 run: build
-	@./bin/backend
+	@./bin
 
-test:
-	@go test -v ./...
 
 

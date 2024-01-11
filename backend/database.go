@@ -12,7 +12,7 @@ import (
 // docker run --name forum -e POSTGRES_USER=forumadmin -e POSTGRES_PASSWORD=gossiping -e POSTGRES_DB=forum -p 5432:5432 -d postgres
 
 func NewPostgressStore() (*PostgresStore, error) {
-	connStr := "user=forumadmin dbname=forum password=gossiping sslmode=disable"
+	connStr := "user=forumadmin dbname=forum_containerised password=gossiping sslmode=disable port=5433"
 
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
@@ -58,10 +58,9 @@ func (s *PostgresStore) createTables() error {
 			postid INT GENERATED ALWAYS AS IDENTITY,
 			threadid INT,
 			title VARCHAR(80),
-			username c(50),
+			username VARCHAR(50),
 			content TEXT,
 			created TIMESTAMP,
-			likes int,
 
 			CONSTRAINT pk_posts PRIMARY KEY (postid),
 			CONSTRAINT fk_posts FOREIGN KEY 
@@ -265,23 +264,6 @@ func (s *PostgresStore) GetPostsByThreadID(id int) ([]*Post, error) {
 
 	return ScanPosts(rows)
 }
-
-// func (s *PostgresStore) GetPostsByThreadID(id int, user string) ([]*Post, error) {
-// 	query := (`
-// 	SELECT * FROM posts 
-// 		LEFT JOIN likes 
-// 		ON posts.postid = likes.postid 
-// 		WHERE threadid = $1 AND likes.username = $2
-	
-// 	`)
-
-// 	rows, err := s.db.Query(query, id, user)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return ScanLikedPosts(rows)
-// }
 
 func (s *PostgresStore) GetPostByPostID(id int) ([]*Post, error) {
 	query := (`
@@ -560,45 +542,6 @@ func (s *PostgresStore) Update(input1, input2, typ string, id int) error {
 	return nil
 }
 
-// func (s *PostgresStore) Like(username string, postid int, like bool) error {
-// 	likequery := (`
-// 	SELECT (CASE likes.username WHEN $2 THEN true ELSE false END) as liked FROM likes
-// 		RIGHT JOIN posts
-// 		ON posts.postid = likes.postid
-// 		WHERE threadid = $1
-// 	`)
-
-// 	unlikequery := (`
-// 	DELETE FROM likes WHERE
-// 	username = $1 AND postid = $2;
-// 	`)
-
-// 	var err error
-// 	if like {
-// 		_,err = s.db.Query(likequery, username, postid)
-// 	} else {
-// 		_,err = s.db.Query(unlikequery, username, postid)
-// 	}
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	updatequery := (`
-// 	UPDATE posts
-// 	SET likes = (
-// 		SELECT COUNT(username)
-// 		FROM likes
-// 		WHERE postid = $1)
-// 	`)
-
-// 	_, uperr := s.db.Query(updatequery, postid)
-// 	if uperr != nil {
-// 		return uperr
-// 	}
-
-// 	return nil
-// }
-
 // helpers
 func retrieveID(r *sql.Rows, mem *int) error {
 	for r.Next() {
@@ -701,37 +644,6 @@ func ScanPosts(row *sql.Rows) ([]*Post, error) {
 	return posts, nil
 }
 
-//should try to extract a list posts liked by current user and compare on frontend in map
-
-// func ScanLikedP(row *sql.Rows) (*Post, error) {
-// 	p := new(Post)
-// 	err := row.Scan(
-// 		&p.PostID,
-// 		&p.ThreadID,
-// 		&p.Title,
-// 		&p.UserName,
-// 		&p.Content,
-// 		&p.Created,
-// 		&p.Liked)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return p, err
-// }
-
-// func ScanLikedPosts(row *sql.Rows) ([]*Post, error) {
-// 	posts := []*Post{}
-// 	for row.Next() {
-// 		t, err := ScanLikedP(row)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		posts = append(posts, t)
-// 	}
-// 	return posts, nil
-// }
-
 func ScanC(row *sql.Rows) (*Comment, error) {
 	c := new(Comment)
 	err := row.Scan(
@@ -756,9 +668,9 @@ func ScanComments(row *sql.Rows) ([]*Comment, error) {
 }
 
 // seeding database
-func SeedData(s Database) *Account {
+func SeedData(s Database) {
+	acc, err := NewAccount("admin", "admin@email.com", "adminPassword")
 
-	acc, err := NewAccount("dummyUser2", "dummy2@email.com", "dummyPassword2")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -766,7 +678,7 @@ func SeedData(s Database) *Account {
 		log.Fatal(err)
 	}
 
-	t, err := NewThread(acc.UserName, "sampleThread2", "sampleTag2")
+	t, err := NewThread(acc.UserName, "Best Korean Food", "University Town")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -775,7 +687,7 @@ func SeedData(s Database) *Account {
 	}
 
 	tID := strconv.Itoa(t.ThreadID)
-	p, err := NewPost(tID, acc.UserName, "samplePostTitle2", "samplePostContent2")
+	p, err := NewPost(tID, acc.UserName, "Hwangs", "Amazing Jigae!")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -784,7 +696,7 @@ func SeedData(s Database) *Account {
 	}
 
 	pID := strconv.Itoa(p.PostID)
-	c, err := NewComment(pID, acc.UserName, "sampleCommentContent2")
+	c, err := NewComment(pID, acc.UserName, "Yummy!")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -793,6 +705,4 @@ func SeedData(s Database) *Account {
 	}
 
 	fmt.Printf("seeded database with: userName[%v], threadID[%v], postID[%v], commentID[%v]\n", acc.UserName, t.ThreadID, p.PostID, c.CommentID)
-
-	return acc
 }

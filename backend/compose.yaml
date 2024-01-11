@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: 'postgres:latest'
+    ports:
+      - "5433:5432"
+    restart: always
+    volumes:
+      - forum-psql-data:/var/lib/postgresql
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    healthcheck:
+      test: ["CMD-SHELL", "${conn_string}"]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+  app:
+    image: "forum-backend-cont:latest"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 127.0.0.1:2999:2999
+    depends_on:
+      postgres:
+          condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - forum-app-backend:/server
+
+volumes:
+  forum-psql-data:
+  forum-app-backend:
+
+      
+ 
