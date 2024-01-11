@@ -5,12 +5,13 @@ WORKDIR /server
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY *.go .env ./
+COPY *.go .env Makefile ./
 
 EXPOSE 2999
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o bin
+RUN go build -o bin
 
-CMD ["./bin", "--seed true"]
+ENTRYPOINT ["/server/bin"]
 
-
+CMD ["echo", "hello world"]
+#CMD ["--seed", "true"]

@@ -9,7 +9,7 @@ import (
 
 //enter port numbers
 const frontend = "3000"
-const backend = "2999"
+const backend = "2000"
 
 //command to seed database: ./bin/backend --seed true
 func main() {

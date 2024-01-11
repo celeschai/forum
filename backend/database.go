@@ -12,7 +12,7 @@ import (
 // docker run --name forum -e POSTGRES_USER=forumadmin -e POSTGRES_PASSWORD=gossiping -e POSTGRES_DB=forum -p 5432:5432 -d postgres
 
 func NewPostgressStore() (*PostgresStore, error) {
-	connStr := "user=forumadmin dbname=forum_containerised password=gossiping sslmode=disable port=5433"
+	connStr := "user=forumadmin dbname=forum_containerised password=gossiping sslmode=disable port=5432"
 
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
