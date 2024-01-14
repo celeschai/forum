@@ -8,7 +8,7 @@ All users have to sign up for an account and remain signed in to use any of its 
 
 ## Database:
 Users can only edit and delete content they create, if they attempt to do so on content created by other users, they will be redirected to sign in page. A user's username acts as a foreign key for all content this user creates. Users will be prevented from signing up with an existing username or email. User passwords are encrypted before they are stored. Please refer to the Entity-Relationship Diagram below for more details on the relationships between the different tables in the database and the parts provided for each type fo content.
-![entity-relationship-diagram](https://github.com/celeschai/forum/blob/main/ERD.png)
+![entity-relationship-diagram](https://github.com/celeschai/forum/blob/main/entity-relationship-diagram.png)
 
 ## Styling:
 The SignUp and SignIn pages have been implemented using [MUI](https://mui.com/material-ui/getting-started/templates/). Changes to the MUI template theme can be made in `/frontend/src/SignIn.tsx`. To facilitate my own learning, I styled the rest of the pages with CSS. CSS offers more customisation, you can make your own changes in `/frontend/src/index.css`.
@@ -20,12 +20,12 @@ To start:
 ```
 chmod +x run.sh
 ```
-mark the script file as executable
+mark the script file as executable, then
 
 ```
 ./run.sh
 ```
-run the script file, which: 
+to run the `./run.sh` script file, which: 
 1. executes the `writeenv.sh` script
 2. compose docker using `compose.yml`
 3. seed the database 
