@@ -1,5 +1,5 @@
 import { FormEvent, useState } from "react";
-import { handlePost } from "./handlers";
+import { handlePost } from "../Helpers/handlers";
 
 const NewPost = ({ url, threadid }: { url: string, threadid: string }) => {
   const [title, setTitle] = useState('');

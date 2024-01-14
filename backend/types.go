@@ -35,13 +35,13 @@ type CreateThreadRequest struct {
 }
 
 type CreatePostRequest struct {
-	ThreadID string    `json:"threadid"`
+	ThreadID string `json:"threadid"`
 	Title    string `json:"title"`
 	Content  string `json:"content"`
 }
 
 type CreateCommentRequest struct {
-	PostID  string    `json:"postid"`
+	PostID  string `json:"postid"`
 	Content string `json:"content"`
 }
 
@@ -76,17 +76,6 @@ type Post struct {
 	Likes    string    `json:"likes"`
 }
 
-// type Post struct {
-// 	PostID   int       `json:"id"`
-// 	ThreadID int       `json:"threadid"`
-// 	Title    string    `json:"title"`
-// 	UserName string    `json:"username"`
-// 	Content  string    `json:"content"`
-// 	Created  time.Time `json:"created"`
-// 	Likes    string    `json:"likes"`
-// 	Liked    string    `json:"liked"`
-// }
-
 type Comment struct {
 	CommentID int       `json:"id"`
 	PostID    int       `json:"postid"`
@@ -100,42 +89,42 @@ type PatchRequest struct {
 	Input2 string `json:"input2"`
 }
 
-// copy over all function signatures
 type Database interface {
+	//new account
 	CreateAccount(*Account) error //check if account exists
-	CheckExistingAcc(acc *CreateAccountRequest) error
+	CheckExistingAcc(*CreateAccountRequest) error
+	
+	//new content
+	CreateThread(*Thread) error
+	CreatePost(*Post) error
+	CreateComment(*Comment) error
+	
+	//feed
+	GetLatestThreads(string) ([]*Thread, error)
+	GetPostsByThreadID(int) ([]*Post, error)
+	GetThreadByID(int) ([]*Thread, error)
+	GetPostByID(int) ([]*Post, error)
+	GetCommentByID(int) ([]*Comment, error)
+	GetCommentsByPostID(int)([]*Comment, error)
+	
+	//parentchild
+	GetThreadPosts(int, string) (map[string]interface{}, error)
+	GetPostComments(int) (map[string]interface{}, error)
+
+	//user
+	GetThreadsByUser(string) ([]*Thread, error)
+	GetPostsByUser(string) ([]*Post, error)
+	GetCommentsByUser(string) ([]*Comment, error)
+
+	//accounts
 	GetAccountByUserName(string) (*Account, error)
 	GetAccountByEmail(string) (*Account, error)
 	GetAccUploads(string) (map[string]interface{}, error)
-	GetUser(typ string, id int) (*string, error)
-	//UpdateAccount(*Account) error
-	//DeleteAccountByID(int) error
-
-	GetLatestThreads(string) ([]*Thread, error)
-	CreateThread(*Thread) error
-	GetThreadPosts(id int, user string) (map[string]interface{}, error)
-	GetThreadsByUser(userName string) ([]*Thread, error)
-	GetThreadByID(id int) ([]*Thread, error)
-
-	CreatePost(*Post) error
-	GetPostComments(id int) (map[string]interface{}, error)
-	GetPostsByUser(userName string) ([]*Post, error)
-	GetPostsByThreadID(id int) ([]*Post, error)
-	GetPostByPostID(id int) ([]*Post, error)
-
-	// ScanLikedP(row *sql.Rows) (*UserLikedPost, error)
-	// ScanLikedPosts(row *sql.Rows) ([]*UserLikedPost, error)
-
-	CreateComment(*Comment) error
-	GetCommentByID(id int) ([]*Comment, error)
-
-	Delete(typ string, id int) error
+	GetUser(string, int) (*string, error)
 	Update(input1, input2, typ string, id int) error
-	//Like(username string, postid int, like bool) error
-	//IsLiked(username string) ([]*int, error)
+	Delete(string, int) error
 }
 
-// check connection: nc -vz localhost 5432
 type PostgresStore struct {
 	db *sql.DB //easier change of database if need be
 }

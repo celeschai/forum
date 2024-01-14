@@ -4,6 +4,7 @@ if [ -f .env ]; then
     
     envFilePath="frontend/.env"
     cp .env "$envFilePath"
+    
     # Prefix all variable names with REACT_APP_
     awk -F= '!/^#/ && NF==2 { if ($1 == "HTTPS") print $1 "=" $2; else print "REACT_APP_" $1 "=" $2 }' "$envFilePath" > "$envFilePath.tmp"
     mv "$envFilePath.tmp" "$envFilePath"

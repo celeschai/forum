@@ -1,6 +1,6 @@
-import useFetch from "./useFetch";
-import { DisplayThreads, DisplayPosts, DisplayComments, thread, post, comment } from "./Display";
-import { handlePost } from "./handlers"
+import useFetch from "../Helpers/useFetch";
+import { DisplayThreads, DisplayPosts, DisplayComments, thread, post, comment } from "../Helpers/Display";
+import { handlePost } from "../Helpers/handlers"
 
 type accountPosts = {
     username: string,

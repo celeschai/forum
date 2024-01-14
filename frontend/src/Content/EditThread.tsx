@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import useFetch from './useFetch';
+import useFetch from '../Helpers/useFetch';
 import { useParams } from 'react-router-dom';
-import { handlePatch } from './handlers';
+import { handlePatch } from '../Helpers/handlers';
 
 
 

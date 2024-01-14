@@ -3,9 +3,9 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"github.com/joho/godotenv"
 	"log"
 	"strconv"
-	"github.com/joho/godotenv"
 
 	_ "github.com/lib/pq"
 )
@@ -17,14 +17,14 @@ func NewPostgressStore() (*PostgresStore, error) {
 	if err != nil {
 		return nil, err
 	}
-	
-	connStr := 
-		"user=" + env["DB_USER"] + 
-		" host=" + env["DB_HOST"] + 
-		" dbname=" + env["DB_NAME"] + 
-		" password=" + env["DB_PASSWORD"] + 
-		" sslmode=" + env["DB_SSL_MODE"] + 
-		" port=" + env["DB_PORT"]
+
+	connStr :=
+		"user=" + env["DB_USER"] +
+			" host=" + env["DB_HOST"] +
+			" dbname=" + env["DB_NAME"] +
+			" password=" + env["DB_PASSWORD"] +
+			" sslmode=" + env["DB_SSL_MODE"] +
+			" port=" + env["DB_PORT"]
 
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
@@ -96,39 +96,13 @@ func (s *PostgresStore) createTables() error {
 			CONSTRAINT fk_comments_u FOREIGN KEY
 				(username) REFERENCES users(username)
     			ON DELETE CASCADE
-		);
-		CREATE TABLE IF NOT EXISTS likes(
-			username VARCHAR(50),
-			postid INT,
-
-			CONSTRAINT fk_likes_u FOREIGN KEY
-				(username) REFERENCES users(username)
-				ON DELETE CASCADE,
-			CONSTRAINT fk_likes_id FOREIGN KEY
-				(postid) REFERENCES posts(postid)
-				ON DELETE CASCADE
 		);`
 
 	_, err := s.db.Exec(query)
 	return err
 }
 
-func (s *PostgresStore) CheckExistingAcc(acc *CreateAccountRequest) error {
-	check := (`SELECT * FROM users WHERE email = $1`)
-	exist := s.db.QueryRow(check, acc.Email)
-	if exists := exist.Scan(); exists != sql.ErrNoRows {
-		return fmt.Errorf("an account with this email already exists")
-	}
-
-	name := (`SELECT * FROM users WHERE username = $1`)
-	dup := s.db.QueryRow(name, acc.UserName)
-	if duplicate := dup.Scan(); duplicate != sql.ErrNoRows {
-		return fmt.Errorf("an account with this user name already exists")
-	}
-
-	return nil
-}
-
+// new account
 func (s *PostgresStore) CreateAccount(acc *Account) error {
 	query := (`
 	INSERT INTO users 
@@ -150,6 +124,23 @@ func (s *PostgresStore) CreateAccount(acc *Account) error {
 	return nil
 }
 
+func (s *PostgresStore) CheckExistingAcc(acc *CreateAccountRequest) error {
+	check := (`SELECT * FROM users WHERE email = $1`)
+	exist := s.db.QueryRow(check, acc.Email)
+	if exists := exist.Scan(); exists != sql.ErrNoRows {
+		return fmt.Errorf("an account with this email already exists")
+	}
+
+	name := (`SELECT * FROM users WHERE username = $1`)
+	dup := s.db.QueryRow(name, acc.UserName)
+	if duplicate := dup.Scan(); duplicate != sql.ErrNoRows {
+		return fmt.Errorf("an account with this user name already exists")
+	}
+
+	return nil
+}
+
+// new content
 func (s *PostgresStore) CreateThread(t *Thread) error {
 	query := (`
 	INSERT INTO threads 
@@ -220,6 +211,7 @@ func (s *PostgresStore) CreateComment(c *Comment) error {
 	return retrieveID(row, &c.CommentID)
 }
 
+// feed
 func (s *PostgresStore) GetLatestThreads(tag string) ([]*Thread, error) {
 	if tag == "latest" {
 		query := (`
@@ -248,10 +240,38 @@ func (s *PostgresStore) GetLatestThreads(tag string) ([]*Thread, error) {
 	}
 }
 
-func (s *PostgresStore) GetThreadByThreadID(id int) ([]*Thread, error) {
+func (s *PostgresStore) GetThreadByID(id int) ([]*Thread, error) {
 	query := (`
 	SELECT * FROM threads
 	WHERE threadid = $1
+	`)
+
+	rows, err := s.db.Query(query, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return ScanThreads(rows)
+}
+
+func (s *PostgresStore) GetCommentByID(id int) ([]*Comment, error) {
+	query := (`
+	SELECT * FROM comments
+	WHERE commentid = $1
+	`)
+
+	rows, err := s.db.Query(query, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return ScanComments(rows)
+}
+
+func (s *PostgresStore) GetPostByID(id int) ([]*Post, error) {
+	query := (`
+	SELECT * FROM posts
+	WHERE postid = $1
 	`)
 
 	row, err := s.db.Query(query, id)
@@ -259,7 +279,7 @@ func (s *PostgresStore) GetThreadByThreadID(id int) ([]*Thread, error) {
 		return nil, err
 	}
 
-	return ScanThreads(row)
+	return ScanPosts(row)
 }
 
 func (s *PostgresStore) GetPostsByThreadID(id int) ([]*Post, error) {
@@ -277,20 +297,6 @@ func (s *PostgresStore) GetPostsByThreadID(id int) ([]*Post, error) {
 	return ScanPosts(rows)
 }
 
-func (s *PostgresStore) GetPostByPostID(id int) ([]*Post, error) {
-	query := (`
-	SELECT * FROM posts
-	WHERE postid = $1
-	`)
-
-	row, err := s.db.Query(query, id)
-	if err != nil {
-		return nil, err
-	}
-
-	return ScanPosts(row)
-}
-
 func (s *PostgresStore) GetCommentsByPostID(id int) ([]*Comment, error) {
 	query := (`
 	SELECT * FROM comments
@@ -306,8 +312,9 @@ func (s *PostgresStore) GetCommentsByPostID(id int) ([]*Comment, error) {
 	return ScanComments(rows)
 }
 
+// parentchild
 func (s *PostgresStore) GetThreadPosts(id int, user string) (map[string]interface{}, error) {
-	thread, err := s.GetThreadByThreadID(id)
+	thread, err := s.GetThreadByID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -325,7 +332,7 @@ func (s *PostgresStore) GetThreadPosts(id int, user string) (map[string]interfac
 }
 
 func (s *PostgresStore) GetPostComments(id int) (map[string]interface{}, error) {
-	post, err := s.GetPostByPostID(id)
+	post, err := s.GetPostByID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -349,6 +356,7 @@ func (s *PostgresStore) GetPostComments(id int) (map[string]interface{}, error) 
 	return m, nil
 }
 
+// user
 func (s *PostgresStore) GetThreadsByUser(userName string) ([]*Thread, error) {
 	query := (`
 	SELECT * FROM threads
@@ -394,32 +402,63 @@ func (s *PostgresStore) GetCommentsByUser(userName string) ([]*Comment, error) {
 	return ScanComments(rows)
 }
 
-func (s *PostgresStore) GetThreadByID(id int) ([]*Thread, error) {
+// accounts
+func (s *PostgresStore) GetAccountByUserName(userName string) (*Account, error) {
 	query := (`
-	SELECT * FROM threads
-	WHERE threadid = $1
-	`)
+	SELECT * FROM users
+	WHERE userName = $1`)
+	row, err1 := s.db.Query(query, userName)
 
-	rows, err := s.db.Query(query, id)
-	if err != nil {
-		return nil, err
+	if err1 != nil {
+		return nil, err1
 	}
 
-	return ScanThreads(rows)
+	for row.Next() {
+		return ScanAccount(row)
+	}
+
+	return nil, fmt.Errorf("invalid username")
 }
 
-func (s *PostgresStore) GetCommentByID(id int) ([]*Comment, error) {
+func (s *PostgresStore) GetAccountByEmail(email string) (*Account, error) {
 	query := (`
-	SELECT * FROM comments
-	WHERE commentid = $1
-	`)
+	SELECT * FROM users
+	WHERE email = $1`)
+	row, err1 := s.db.Query(query, email)
 
-	rows, err := s.db.Query(query, id)
+	if err1 != nil {
+		return nil, err1
+	}
+
+	for row.Next() {
+		return ScanAccount(row)
+	}
+
+	return nil, fmt.Errorf("invalid email")
+}
+
+func (s *PostgresStore) GetAccUploads(userName string) (map[string]interface{}, error) {
+	threads, err := s.GetThreadsByUser(userName)
 	if err != nil {
 		return nil, err
 	}
 
-	return ScanComments(rows)
+	posts, err := s.GetPostsByUser(userName)
+	if err != nil {
+		return nil, err
+	}
+
+	comments, err := s.GetCommentsByUser(userName)
+	if err != nil {
+		return nil, err
+	}
+
+	m := make(map[string]interface{})
+	m["threads"] = threads
+	m["posts"] = posts
+	m["comments"] = comments
+
+	return m, nil
 }
 
 func (s *PostgresStore) GetUser(typ string, id int) (*string, error) {
@@ -462,63 +501,6 @@ func (s *PostgresStore) GetUser(typ string, id int) (*string, error) {
 	return user, nil
 }
 
-func (s *PostgresStore) GetAccUploads(userName string) (map[string]interface{}, error) {
-	threads, err := s.GetThreadsByUser(userName)
-	if err != nil {
-		return nil, err
-	}
-
-	posts, err := s.GetPostsByUser(userName)
-	if err != nil {
-		return nil, err
-	}
-
-	comments, err := s.GetCommentsByUser(userName)
-	if err != nil {
-		return nil, err
-	}
-
-	m := make(map[string]interface{})
-	m["threads"] = threads
-	m["posts"] = posts
-	m["comments"] = comments
-
-	return m, nil
-}
-
-func (s *PostgresStore) Delete(typ string, id int) error {
-	tquery := (`
-	DELETE FROM threads
-	WHERE threadid = $1 
-	`)
-	pquery := (`
-	DELETE FROM posts
-	WHERE postid = $1
-	`)
-	cquery := (`
-	DELETE FROM comments
-	WHERE commentid = $1
-	`)
-
-	var Q string
-	switch {
-	case typ == "thread":
-		Q = tquery
-	case typ == "post":
-		Q = pquery
-	case typ == "comment":
-		Q = cquery
-	}
-
-	_, err := s.db.Query(Q, id)
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("deleted")
-	return nil
-}
-
 func (s *PostgresStore) Update(input1, input2, typ string, id int) error {
 	tquery := (`
 	UPDATE threads
@@ -554,6 +536,39 @@ func (s *PostgresStore) Update(input1, input2, typ string, id int) error {
 	return nil
 }
 
+func (s *PostgresStore) Delete(typ string, id int) error {
+	tquery := (`
+	DELETE FROM threads
+	WHERE threadid = $1 
+	`)
+	pquery := (`
+	DELETE FROM posts
+	WHERE postid = $1
+	`)
+	cquery := (`
+	DELETE FROM comments
+	WHERE commentid = $1
+	`)
+
+	var Q string
+	switch {
+	case typ == "thread":
+		Q = tquery
+	case typ == "post":
+		Q = pquery
+	case typ == "comment":
+		Q = cquery
+	}
+
+	_, err := s.db.Query(Q, id)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("deleted")
+	return nil
+}
+
 // helpers
 func retrieveID(r *sql.Rows, mem *int) error {
 	for r.Next() {
@@ -563,40 +578,6 @@ func retrieveID(r *sql.Rows, mem *int) error {
 		}
 	}
 	return nil
-}
-
-func (s *PostgresStore) GetAccountByUserName(userName string) (*Account, error) {
-	query := (`
-	SELECT * FROM users
-	WHERE userName = $1`)
-	row, err1 := s.db.Query(query, userName)
-
-	if err1 != nil {
-		return nil, err1
-	}
-
-	for row.Next() {
-		return ScanAccount(row)
-	}
-
-	return nil, fmt.Errorf("invalid username")
-}
-
-func (s *PostgresStore) GetAccountByEmail(email string) (*Account, error) {
-	query := (`
-	SELECT * FROM users
-	WHERE email = $1`)
-	row, err1 := s.db.Query(query, email)
-
-	if err1 != nil {
-		return nil, err1
-	}
-
-	for row.Next() {
-		return ScanAccount(row)
-	}
-
-	return nil, fmt.Errorf("invalid email")
 }
 
 func ScanAccount(row *sql.Rows) (*Account, error) {

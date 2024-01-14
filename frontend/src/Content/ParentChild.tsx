@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
-import useFetch from "./useFetch";
-import { DisplayThreads, DisplayPosts, DisplayComments, thread, post, comment } from "./Display";
+import useFetch from "../Helpers/useFetch";
+import { DisplayThreads, DisplayPosts, DisplayComments, thread, post, comment } from "../Helpers/Display";
 import { useState } from "react";
 import NewPost from "./NewPost";
 import NewComment from "./NewComment";

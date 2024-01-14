@@ -1,5 +1,5 @@
-import useFetch from "./useFetch";
-import { DisplayThreads } from "./Display";
+import useFetch from "../Helpers/useFetch";
+import { DisplayThreads } from "../Helpers/Display";
 import { useState } from "react";
 
 const Feed = ({ url }: { url: string }) => {

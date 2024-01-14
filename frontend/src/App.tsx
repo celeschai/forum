@@ -1,22 +1,22 @@
-import SignIn from './SignIn';
-import SignUp from './SignUp';
+import SignIn from './User/SignIn';
+import SignUp from './User/SignUp';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Navbar from './Navbar';
-import NotFound from './NotFound';
-import Feed from './Feed';
-import NewThread from './NewThread';
-import Account from './Account';
-import { ThreadPosts, PostComments } from './ParentChild';
-import Start from './Start';
-import { EditThread } from './EditThread';
-import { EditPost } from './EditPost';
-import { EditComment } from './EditComment';
+import Navbar from './User/Navbar';
+import NotFound from './Content/NotFound';
+import Feed from './User/Feed';
+import NewThread from './Content/NewThread';
+import Account from './User/Account';
+import { ThreadPosts, PostComments } from './Content/ParentChild';
+import Start from './User/Start';
+import { EditThread } from './Content/EditThread';
+import { EditPost } from './Content/EditPost';
+import { EditComment } from './Content/EditComment';
 
 const HTTP: string = process.env.REACT_APP_HTTPS === "true" ? "https" : "http";
 const host: string = process.env.REACT_APP_HOST != null ? process.env.REACT_APP_HOST : "localhost"
 const serverport: string = process.env.REACT_APP_BACK_PORT != null ? process.env.REACT_APP_BACK_PORT : "3000"
 
-export const hosturl: string = HTTP.concat("://", host, ":", serverport)
+const hosturl: string = HTTP.concat("://", host, ":", serverport)
 
 console.log("hosturl: ", hosturl)
 
@@ -27,7 +27,7 @@ function App() {
       <div className="app">
         <Navbar />
 
-        <Routes>
+        <Routes> //urls can also be imported, passing in as props so components are more resuable
           <Route path="" element={<Start url={hosturl.concat("/home")} />} />
 
           <Route path="/login" element={<SignIn url={hosturl.concat("/login")} initialResult={'Login required'} />} />

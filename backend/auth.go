@@ -82,19 +82,12 @@ func setCookie(w http.ResponseWriter, r *http.Request, name, value string) {
 	cookie := http.Cookie{
 		Name:     name,
 		Value:    value,
-		MaxAge:   604800, 
+		MaxAge:   604800, //change to allow user to remain logged in 
 		HttpOnly: true,
 		Secure:   true,
 		SameSite: http.SameSiteLaxMode,
 		Path: "/",
-		//PartitionKey: "none",
 	}
-	// ck, err := cook.MarshalJSON()
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// cookie := string(ck)
-	//w.Header().Add("Set-Cookie", cookie)
 	http.SetCookie(w, &cookie)
 }
 

@@ -1,5 +1,5 @@
 import { FormEvent, useState } from "react";
-import { handlePost } from "./handlers";
+import { handlePost } from "../Helpers/handlers";
 
 const NewThread = ({ url }: { url: string }) => {
   const [title, setTitle] = useState('');

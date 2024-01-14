@@ -1,5 +1,5 @@
 import { FormEvent, useState } from "react";
-import { handlePost } from "./handlers";
+import { handlePost } from "../Helpers/handlers";
 
 const NewComment = ({ url, postid }: { url: string, postid: string }) => {
   const [comment, setComment] = useState('');
