@@ -4,16 +4,15 @@ import (
 	"log"
 	"flag"
 	"fmt"
-
 )
 
 //enter port numbers
 const frontend = "3000"
 const backend = "2000"
+const host = "http://127.0.0.1"
 
 //command to seed database: ./bin/backend --seed true
 func main() {
-
 	seed := flag.Bool("seed", false, "seed the database")
 	flag.Parse()
 

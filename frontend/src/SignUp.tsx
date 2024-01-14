@@ -42,7 +42,7 @@ export default function SignUp({ url, initialResult }:
         setResult("Success! Please log in.");
         wait(1000);
         window.location.href = "/login";
-      } else if (response.status == 409) {
+      } else if (response.status === 409) {
         setResult("Account already exists, please log in.");
         wait(1000);
         window.location.href = "/login";

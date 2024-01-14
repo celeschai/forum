@@ -1,0 +1,80 @@
+services:
+  postgres:
+    container_name: forum-psql
+    image: "postgres"
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    healthcheck:
+      test: ["CMD-SHELL", "${conn_string}"]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - forum-psql:/var/lib/postgresql/data
+
+  frontend:
+    container_name: forum-frontend
+    image: "forum-frontend:latest"
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - ${HOST}:${FRONT_PORT}:${FRONT_PORT}
+    stdin_open: true
+    command: npm start
+
+  backend:
+    container_name: forum-backend
+    image: "forum-backend:latest"
+    build:
+      context:  ./backend
+      dockerfile: Dockerfile
+    ports:
+      - ${HOST}:${BACK_PORT}:${BACK_PORT}
+    restart: on-failure
+    depends_on:
+      postgres:
+          condition: service_healthy
+    env_file:
+      -  .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - forum-backend:/backend
+    command: ./bin --seed true
+  
+  backup:
+    container_name: forum-backup 
+    image: "postgres"
+    depends_on:
+      postgres:
+          condition: service_healthy
+    volumes:
+      - ./backup:/backup
+    command: >
+      bash -c "while true; do
+        PGPASSWORD=$$POSTGRES_PASSWORD pg_dump -h db-postgresql -U $$POSTGRES_USER -Fc $$POSTGRES_DB > /backup/$$(date +%Y-%m-%d-%H-%M-%S).dump
+        echo ""Backup done at $$(date +%Y-%m-%d_%H:%M:%S)""
+        ls -1 /backup/*.dump | head -n -2 | xargs rm -f
+        sleep 86400
+      done"
+    env_file:
+      -  .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+
+volumes:
+  forum-psql:
+  forum-backend:
+
+
+      

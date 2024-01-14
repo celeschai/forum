@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"net/http"
-	"os"
 	"golang.org/x/crypto/bcrypt"
+	"github.com/joho/godotenv"
 )
 
 func JWTAuth(w http.ResponseWriter, r *http.Request, s Database) error {
@@ -45,7 +45,12 @@ func JWTAuth(w http.ResponseWriter, r *http.Request, s Database) error {
 }
 
 func validateJWT(tokenString string) (*jwt.Token, error) { //validate jwt token then the secret key
-	jwtSecret := os.Getenv("JWT_SECRET")
+	env, err := godotenv.Read(".env")
+	if err != nil {
+		return nil, err
+	}
+	jwtSecret := env["JWT_SECRET"]
+
 	return jwt.Parse(
 		tokenString,
 		func(token *jwt.Token) (interface{}, error) {
@@ -62,8 +67,13 @@ func createJWT(acc *Account) (string, error) {
 		"userName":    acc.UserName,
 		"userCreated": acc.Created,
 	} //std jwt.Claim changes it to float64
+	
+	env, err := godotenv.Read(".env")
+	if err != nil {
+		return "", err
+	}
+	jwtSecret := env["JWT_SECRET"]
 
-	jwtSecret := os.Getenv("JWT_SECRET")
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
 	return token.SignedString([]byte(jwtSecret))
 }
@@ -72,11 +82,19 @@ func setCookie(w http.ResponseWriter, r *http.Request, name, value string) {
 	cookie := http.Cookie{
 		Name:     name,
 		Value:    value,
-		MaxAge:   604800,
+		MaxAge:   604800, 
 		HttpOnly: true,
 		Secure:   true,
 		SameSite: http.SameSiteLaxMode,
+		Path: "/",
+		//PartitionKey: "none",
 	}
+	// ck, err := cook.MarshalJSON()
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+	// cookie := string(ck)
+	//w.Header().Add("Set-Cookie", cookie)
 	http.SetCookie(w, &cookie)
 }
 

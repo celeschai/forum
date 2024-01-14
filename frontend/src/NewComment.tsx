@@ -1,12 +1,12 @@
 import { FormEvent, useState } from "react";
 import { handlePost } from "./handlers";
 
-const NewComment = ({url, postid}: {url: string, postid: string}) => {
+const NewComment = ({ url, postid }: { url: string, postid: string }) => {
   const [comment, setComment] = useState('');
- 
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    const data = { 
+    const data = {
       postid: postid,
       content: comment
     };
@@ -18,8 +18,8 @@ const NewComment = ({url, postid}: {url: string, postid: string}) => {
     <div className="create">
       <h2>Add a New Comment</h2>
       <form onSubmit={handleSubmit}>
-        <textarea 
-          required 
+        <textarea
+          required
           value={comment}
           onChange={(e) => setComment(e.target.value)}
         />

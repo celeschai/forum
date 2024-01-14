@@ -9,6 +9,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
+	
 )
 
 func (s *APIServer) Run() {
@@ -29,11 +30,12 @@ func (s *APIServer) Run() {
 	log.Println("JSON API server running on port", s.listenAddr)
 
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"http://localhost:" + frontend + "*"},
+		AllowedOrigins: []string{host + ":" + frontend + "*"},
 		AllowCredentials: true,
 		Debug: false,
-		AllowedHeaders: []string{"*"},
+		AllowedHeaders: []string{"Content-Type", "Authorization", "X-Requested-With", "Cookies"},
 		AllowedMethods: []string{http.MethodGet, http.MethodPost, http.MethodDelete, http.MethodOptions, http.MethodPatch},
+		ExposedHeaders: []string{"set-cookie"},
 	})
 	handler := c.Handler(router)
 	http.ListenAndServe(s.listenAddr, handler)
@@ -58,17 +60,17 @@ func (s *APIServer) handleLogin(w http.ResponseWriter, r *http.Request) error {
 
 	req := new(LoginRequest)
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		return err
+		return WriteJSON(w, http.StatusInternalServerError, err)
 	}
 
 	acc, err := s.database.GetAccountByEmail(req.Email)
 	if err != nil{
-		return WriteJSON(w, http.StatusUnauthorized, nil)
+		return WriteJSON(w, http.StatusInternalServerError, err)
 	}
 	
 	check, err := acc.ValidatePassword(req.Password)
 	if err != nil{
-		return WriteJSON(w, http.StatusBadRequest, nil)
+		return WriteJSON(w, http.StatusInternalServerError, nil)
 	}
 	if !check {
 		return WriteJSON(w, http.StatusUnauthorized, nil)
@@ -76,8 +78,9 @@ func (s *APIServer) handleLogin(w http.ResponseWriter, r *http.Request) error {
 
 	token, err := createJWT(acc)
 	if err != nil {
-		return err
+		return WriteJSON(w, http.StatusInternalServerError, err)
 	}
+
 	setCookie(w, r, "jwtToken", token)
 	setCookie(w, r, "userName", acc.UserName)
 
@@ -92,7 +95,7 @@ func (s *APIServer) handleSignup(w http.ResponseWriter, r *http.Request) error {
 
 	req := new(CreateAccountRequest)
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		return err
+		return WriteJSON(w, http.StatusInternalServerError, err)
 	}
 
 	exist := s.database.CheckExistingAcc(req)
@@ -102,11 +105,11 @@ func (s *APIServer) handleSignup(w http.ResponseWriter, r *http.Request) error {
 
 	acc, err := NewAccount(req.UserName, req.Email, req.Password)
 	if err != nil {
-		return WriteJSON(w, http.StatusBadRequest, ServerResponse{Resp: "failed to create account, please try again"})
+		return WriteJSON(w, http.StatusInternalServerError, nil)
 	}
 
 	if err := s.database.CreateAccount(acc); err != nil {
-		return WriteJSON(w, http.StatusBadRequest, ServerResponse{Resp: err.Error()})
+		return WriteJSON(w, http.StatusInternalServerError, nil)
 	}
 	
 	return WriteJSON(w, http.StatusOK, ServerResponse{Resp: "succesful signup"})
@@ -127,13 +130,13 @@ func (s *APIServer) handleAccount(w http.ResponseWriter, r *http.Request) error 
 
 	cookie, cookerr := r.Cookie("userName")
 	if cookerr != nil {
-		return cookerr
+		return WriteJSON(w, http.StatusInternalServerError, cookerr)
 	}
 	username := cookie.Value
 
 	acc, err := s.database.GetAccUploads(username)
 	if err != nil {
-		return err
+		return WriteJSON(w, http.StatusInternalServerError, err)
 	}
 	acc["username"]=username
 
@@ -165,7 +168,7 @@ func (s *APIServer) handleGetParentChild(w http.ResponseWriter, r *http.Request)
 	}
 	cookie, cookerr := r.Cookie("userName")
 	if cookerr != nil {
-		return cookerr
+		return WriteJSON(w, http.StatusInternalServerError, cookerr)
 	}
 	user := cookie.Value
 
@@ -204,7 +207,7 @@ func (s *APIServer) handleCreateNew(w http.ResponseWriter, r *http.Request) erro
 
 	cookie, cookerr := r.Cookie("userName")
 	if cookerr != nil {
-		return err
+		return WriteJSON(w, http.StatusInternalServerError, cookerr)
 	}
 
 	username := cookie.Value
@@ -225,17 +228,17 @@ func (s *APIServer) handleCreateNew(w http.ResponseWriter, r *http.Request) erro
 func (s *APIServer) handleNewThread(w http.ResponseWriter, r *http.Request, username string) error {
 	req := new(CreateThreadRequest)
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-		return err
+		return WriteJSON(w, http.StatusInternalServerError, err)
 	}
 
 	thread, err := NewThread(req.Title, username, req.Tag)
 	if err != nil {	
-		return err
+		return WriteJSON(w, http.StatusInternalServerError, err)
 	}
 
 	err = s.database.CreateThread(thread)
 	if err != nil {
-		return err
+		return WriteJSON(w, http.StatusInternalServerError, err)
 	}
 
 	return WriteJSON(w, http.StatusOK, thread)
@@ -244,17 +247,17 @@ func (s *APIServer) handleNewThread(w http.ResponseWriter, r *http.Request, user
 func (s *APIServer) handleNewPost(w http.ResponseWriter, r *http.Request, username string) error {
 	req := new(CreatePostRequest)
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-		return err
+		return WriteJSON(w, http.StatusInternalServerError, err)
 	}
 
 	post, err := NewPost(req.ThreadID, username, req.Title, req.Content)
 	if err != nil {	
-		return err
+		return WriteJSON(w, http.StatusInternalServerError, err)
 	}
 
 	err = s.database.CreatePost(post)
 	if err != nil {
-		return err
+		return WriteJSON(w, http.StatusInternalServerError, err)
 	}
 
 	return WriteJSON(w, http.StatusOK, post)
@@ -263,17 +266,17 @@ func (s *APIServer) handleNewPost(w http.ResponseWriter, r *http.Request, userna
 func (s *APIServer) handleNewComment(w http.ResponseWriter, r *http.Request, username string) error {
 	req := new(CreateCommentRequest)
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-		return err
+		return WriteJSON(w, http.StatusInternalServerError, err)
 	}
 
 	comment, err := NewComment(req.PostID, username, req.Content)
 	if err != nil {	
-		return err
+		return WriteJSON(w, http.StatusInternalServerError, err)
 	}
 
 	err = s.database.CreateComment(comment)
 	if err != nil {
-		return err
+		return WriteJSON(w, http.StatusInternalServerError, err)
 	}
 
 	return WriteJSON(w, http.StatusOK, comment)
@@ -289,12 +292,12 @@ func (s *APIServer) handleUserContent(w http.ResponseWriter, r *http.Request) er
 	typ := mux.Vars(r)["type"]
 	id, err := strconv.Atoi(mux.Vars(r)["id"])
 	if err != nil {
-		return err
+		return WriteJSON(w, http.StatusInternalServerError, err)
 	}
 
 	userName, ckerr := r.Cookie("userName")
 	if ckerr != nil {
-		return ckerr
+		return WriteJSON(w, http.StatusInternalServerError, ckerr)
 	}
 	
 	user := userName.Value
@@ -323,7 +326,7 @@ func (s *APIServer) handleGet(w http.ResponseWriter, r *http.Request) error {
 	typ := mux.Vars(r)["type"]
 	id, err := strconv.Atoi(mux.Vars(r)["id"])
 	if err != nil {
-		return err
+		return WriteJSON(w, http.StatusInternalServerError, err)
 	}
 
 	if typ == "thread" {
@@ -369,12 +372,12 @@ func (s *APIServer) handlePatch(w http.ResponseWriter, r *http.Request) error {
 	typ := mux.Vars(r)["type"]
 	id, err := strconv.Atoi(mux.Vars(r)["id"])
 	if err != nil {
-		return err
+		return WriteJSON(w, http.StatusInternalServerError, err)
 	}
 
 	req := new(PatchRequest)
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-		return err
+		return WriteJSON(w, http.StatusInternalServerError, err)
 	}
 
 	patchErr := s.database.Update(req.Input1, req.Input2, typ, id)
@@ -384,35 +387,6 @@ func (s *APIServer) handlePatch(w http.ResponseWriter, r *http.Request) error {
 	
 	return WriteJSON(w, http.StatusOK, "succesfully updated")
 }
-
-// func (s *APIServer) handleLike(w http.ResponseWriter, r *http.Request) error {
-// 	if r.Method != "POST" {
-// 		return WriteJSON(w, http.StatusMethodNotAllowed, nil)
-// 	}
-
-// 	like := mux.Vars(r)["like"]
-// 	liked, err := strconv.ParseBool(like) 
-// 	if err != nil {
-// 		return err
-// 	}
-// 	postid, err := strconv.Atoi(mux.Vars(r)["id"])
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	userName, ckerr := r.Cookie("userName")
-// 	if ckerr != nil {
-// 		return ckerr
-// 	}
-// 	user := userName.Value
-
-// 	dberr := s.database.Like(user, postid, liked)
-// 	if dberr != nil {
-// 		return dberr
-// 	}
-
-// 	return WriteJSON(w, http.StatusOK, "liked")
-// }
 
 // Helper functions
 func WriteJSON(w http.ResponseWriter, status int, v any) error { //add error so it is compatible with all function signatures

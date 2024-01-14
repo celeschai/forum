@@ -18,31 +18,31 @@ const NewThread = ({ url }: { url: string }) => {
 
   return (
     <div className="createthread">
-    <div className="create">
-      <h2>Add a New Thread</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="title">
-          <label>Thread title:</label>
-          <input
-            type="text"
-            required
-            placeholder="(enter thread title)"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </div>
-        <div className="filter">
-          <label>Location:</label>
-          <select
-            value={tag}
-            onChange={(e) => setTag(e.target.value)}>
-            <option value="University Town">University Town</option>
-            <option value="School of Computing">School of Computing</option>
-          </select>
-        </div>
-        <button>Add Thread</button>
-      </form>
-    </div>
+      <div className="create">
+        <h2>Add a New Thread</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="title">
+            <label>Thread title:</label>
+            <input
+              type="text"
+              required
+              placeholder="(enter thread title)"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
+          <div className="filter">
+            <label>Location:</label>
+            <select
+              value={tag}
+              onChange={(e) => setTag(e.target.value)}>
+              <option value="University Town">University Town</option>
+              <option value="School of Computing">School of Computing</option>
+            </select>
+          </div>
+          <button>Add Thread</button>
+        </form>
+      </div>
     </div>
 
   );

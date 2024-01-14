@@ -9,36 +9,36 @@ const useFetch = (url: string) => {
   useEffect(() => {
     const abortCont = new AbortController();
     setTimeout(() => {
-      fetch(url, 
-        { 
+      fetch(url,
+        {
           method: 'GET',
           headers: { "Content-Type": "application/json" },
           credentials: 'include',
-          signal: abortCont.signal 
+          signal: abortCont.signal
         })
-      .then(res => {
-        if (res.status === 401) {
-          throw Error('Please log in')
-        } else if (!res.ok) { // error coming back from server
-          throw Error('could not fetch the data for that resource');
-        } else {
-          return res.json();
-        }
-      })
-      .then(data => {
-        setIsPending(false);
-        setData(data);
-        setError(null); 
-      })
-      .catch(err => {
-        if (err.name === 'AbortError') {
-          console.log('fetch aborted')
-        } else {
-          // auto catches network / connection error
+        .then(res => {
+          if (res.status === 401) {
+            throw Error('Please log in')
+          } else if (!res.ok) { // error coming back from server
+            throw Error('could not fetch the data for that resource');
+          } else {
+            return res.json();
+          }
+        })
+        .then(data => {
           setIsPending(false);
-          setError(err.message);
-        }
-      })
+          setData(data);
+          setError(null);
+        })
+        .catch(err => {
+          if (err.name === 'AbortError') {
+            console.log('fetch aborted')
+          } else {
+            // auto catches network / connection error
+            setIsPending(false);
+            setError(err.message);
+          }
+        })
     }, 1000);
 
     return () => abortCont.abort();
@@ -46,5 +46,5 @@ const useFetch = (url: string) => {
 
   return { data, isPending, error };
 }
- 
+
 export default useFetch;

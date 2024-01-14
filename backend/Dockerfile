@@ -1,17 +1,14 @@
 FROM golang:1.21.5 
 
-WORKDIR /server
+WORKDIR /backend
 
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY *.go .env Makefile ./
+COPY *.go Makefile .env ./
 
-EXPOSE 2999
+EXPOSE 2000
 
 RUN go build -o bin
 
-ENTRYPOINT ["/server/bin"]
-
-CMD ["echo", "hello world"]
-#CMD ["--seed", "true"]
+CMD ["./bin", "--seed", "true"]

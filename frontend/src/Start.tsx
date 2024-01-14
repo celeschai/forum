@@ -2,14 +2,14 @@ import { Button } from "@mui/material";
 import { useEffect } from "react";
 import { useState } from "react";
 
-const Start = ({url}: {url: string}) => {
+const Start = ({ url }: { url: string }) => {
     const [check, setCheck] = useState(false);
     useEffect(() => {
-        fetch(url, 
-            { 
-            method: 'GET',
-            headers: { "Content-Type": "application/json" },
-            credentials: 'include',
+        fetch(url,
+            {
+                method: 'GET',
+                headers: { "Content-Type": "application/json" },
+                credentials: 'include',
             })
             .then(res => {
                 if (res.status === 200) { // error coming back from server
@@ -20,16 +20,16 @@ const Start = ({url}: {url: string}) => {
                     throw Error('Something went wrong');
                 }
             })
-    }, [check])
+    }, [check, url])
 
 
-    return (  
+    return (
         <div className="start">
             <h1>Welcome to Foodie Gossips!</h1>
             <p>Foodie Gossips is a forum for foodies to share their thoughts on campus dining.</p>
-            <Button onClick = {() => setCheck(true)}>Enter</Button>
+            <Button onClick={() => setCheck(true)}>Enter</Button>
         </div>
     );
 }
- 
+
 export default Start;

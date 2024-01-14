@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"github.com/joho/godotenv"
 
 	_ "github.com/lib/pq"
 )
@@ -12,7 +13,18 @@ import (
 // docker run --name forum -e POSTGRES_USER=forumadmin -e POSTGRES_PASSWORD=gossiping -e POSTGRES_DB=forum -p 5432:5432 -d postgres
 
 func NewPostgressStore() (*PostgresStore, error) {
-	connStr := "user=forumadmin dbname=forum_containerised password=gossiping sslmode=disable port=5432"
+	env, err := godotenv.Read(".env")
+	if err != nil {
+		return nil, err
+	}
+	
+	connStr := 
+		"user=" + env["DB_USER"] + 
+		" host=" + env["DB_HOST"] + 
+		" dbname=" + env["DB_NAME"] + 
+		" password=" + env["DB_PASSWORD"] + 
+		" sslmode=" + env["DB_SSL_MODE"] + 
+		" port=" + env["DB_PORT"]
 
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {

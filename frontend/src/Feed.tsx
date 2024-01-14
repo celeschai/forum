@@ -1,7 +1,6 @@
 import useFetch from "./useFetch";
 import { DisplayThreads } from "./Display";
 import { useState } from "react";
-//figure out how to make pages
 
 const Feed = ({ url }: { url: string }) => {
 

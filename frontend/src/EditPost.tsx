@@ -5,32 +5,32 @@ import { handlePatch } from './handlers';
 
 
 
-export const EditPost = ({url}: {url:string}) => {
-    const {id} = useParams() 
-    if (id == null){
+export const EditPost = ({ url }: { url: string }) => {
+    const { id } = useParams()
+    if (id == null) {
         throw Error("missing identity")
     }
-    const {data, isPending, error} = useFetch(url.concat('/post/', id))
+    const { data, isPending, error } = useFetch(url.concat('/post/', id))
     return (
-      <div className="create">
-        <h2>Edit Thread</h2>
-        { isPending && <div>Loading...</div> }
-        { error && <div>{ error }</div> }
-        { data && <EditCommentForm url={url} iniTitle={data["title"]} iniContent={data["content"]} id = {id}/> }
-      </div>
+        <div className="create">
+            <h2>Edit Thread</h2>
+            {isPending && <div>Loading...</div>}
+            {error && <div>{error}</div>}
+            {data && <EditCommentForm url={url} iniTitle={data["title"]} iniContent={data["content"]} id={id} />}
+        </div>
     );
-  };
-  
-  export default EditPost;
+};
+
+export default EditPost;
 
 
 export const EditCommentForm = (
-    {url, iniTitle, iniContent, id}: {
+    { url, iniTitle, iniContent, id }: {
         url: string,
         iniTitle: string,
         iniContent: string,
         id: string,
-  }) => {
+    }) => {
     const [title, setTitle] = useState(iniTitle);
     const [content, setContent] = useState(iniContent);
 
@@ -41,22 +41,22 @@ export const EditCommentForm = (
         handlePatch(url, 'post', Number(id), req)
     }
 
-    return ( 
+    return (
         <form onSubmit={handleSubmit}>
             <label>Post title:</label>
-                <input 
-                    type="text" 
-                    required 
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                />
+            <input
+                type="text"
+                required
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+            />
             <label>Body:</label>
-            <textarea 
-                required 
+            <textarea
+                required
                 value={content}
                 onChange={(e) => setContent(e.target.value)} />
             <button>Add Post</button>
         </form>
     );
-  }
-   
+}
+

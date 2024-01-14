@@ -1,5 +1,5 @@
-import { Link, Navigate } from 'react-router-dom';
-import { handleDelete, handlePatch } from './handlers';
+import { Link } from 'react-router-dom';
+import { handleDelete } from './handlers';
 
 interface content {
     id: number,
