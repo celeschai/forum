@@ -1,0 +1,33 @@
+{
+    "AWSEBDockerrunVersion": 2,
+    "containerDefinitions": [
+      {
+        "name": "nginx",
+        "image": "forum/nginx",
+        "hostname": "nginx",
+        "essential": true,
+        "portMappings": [
+          {
+            "hostPort": 80,
+            "containerPort": 80
+          }
+        ],
+        "links": ["frontend", "backend"],
+        "memory": 100
+      },
+      {
+        "name": "frontend",
+        "image": "forum/frontend",
+        "hostname": "frontend",
+        "essential": false,
+        "memory": 300
+      },
+      {
+        "name": "backend",
+        "image": "forum/backend",
+        "hostname": "backend",
+        "essential": false,
+        "memory": 300
+      }
+    ]
+}

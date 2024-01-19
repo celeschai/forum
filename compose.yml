@@ -1,6 +1,17 @@
 services:
+  nginx:
+    depends_on:
+      - frontend
+      - backend
+    restart: always # because it is routing traffic to our entire app
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - '80:80'
+
   postgres:
-    container_name: forum-psql
+    container_name: forum/postgres
     image: "postgres"
     restart: always
     env_file:
@@ -15,22 +26,19 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - forum-psql:/var/lib/postgresql/data
+      - forum/postgres:/var/lib/postgresql/data
 
   frontend:
-    container_name: forum-frontend
-    image: "forum-frontend:latest"
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
       - ${HOST}:${FRONT_PORT}:${FRONT_PORT}
+    restart: on-failure
     stdin_open: true
     command: npm start
 
   backend:
-    container_name: forum-backend
-    image: "forum-backend:latest"
     build:
       context:  ./backend
       dockerfile: Dockerfile
@@ -42,12 +50,12 @@ services:
           condition: service_healthy
     env_file:
       -  .env
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+    # environment:
+    #   POSTGRES_USER: ${DB_USER}
+    #   POSTGRES_PASSWORD: ${DB_PASSWORD}
+    #   POSTGRES_DB: ${DB_NAME}
     volumes:
-      - forum-backend:/backend
+      - forum/backend:/backend
     command: ./bin --seed true
   
   backup:
@@ -73,8 +81,8 @@ services:
       POSTGRES_DB: ${DB_NAME}
 
 volumes:
-  forum-psql:
-  forum-backend:
+  forum/postgres:
+  forum/backend:
 
 
       

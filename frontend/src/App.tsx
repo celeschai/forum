@@ -18,7 +18,6 @@ const serverport: string = process.env.REACT_APP_BACK_PORT != null ? process.env
 
 const hosturl: string = HTTP.concat("://", host, ":", serverport)
 
-console.log("hosturl: ", hosturl)
 
 function App() {
 
