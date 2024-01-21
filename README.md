@@ -14,7 +14,7 @@ Users can only edit and delete content they create, if they attempt to do so on 
 The SignUp and SignIn pages have been implemented using [MUI](https://mui.com/material-ui/getting-started/templates/). Changes to the MUI template theme can be made in `/frontend/src/SignIn.tsx`. To facilitate my own learning, I styled the rest of the pages with CSS. CSS offers more customisation, you can make your own changes in `/frontend/src/index.css`.
 
 ## Docker:
-This project is also designed to be dockerised easily. Environment variables that are set in `/.env` overwrites and thus syncs with `/frontend/.env` and `/backend/.env`. A script `writeenv.sh` prefixes the variables with REACT_APP_ to be read by the frontend React app. Backup jobs are automically done and saved on your local machine every day. 
+This project is also designed to be run in docker containers. Environment variables that are set in `/.env` overwrites and thus syncs with `/frontend/.env` and `/backend/.env`. A script `writeenv.sh` prefixes the variables with REACT_APP_ to be read by the frontend React app. Backup jobs are automically done and saved on your local machine every day. 
 
 To start:
 ```
@@ -25,8 +25,8 @@ mark the script file as executable, then
 ```
 ./run.sh
 ```
-to run the `./run.sh` script file, which: 
+run the `./run.sh` script file and the following are executed: 
 1. executes the `writeenv.sh` script
-2. compose docker using `compose.yml`
+2. create docker images, containers, and volumes using `compose.yml`
 3. seed the database 
 4. start the react frontend

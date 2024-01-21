@@ -10,7 +10,7 @@ export const EditThread = ({ url }: { url: string }) => {
     if (id == null) {
         throw Error("missing identity")
     }
-    const { data, isPending, error } = useFetch(url.concat('/thread/', id))
+    const { data, isPending, error } = useFetch(url.concat('/user/thread/', id))
     return (
         <div className="create">
             <h2>Edit Thread</h2>
@@ -38,7 +38,7 @@ export const EditThreadForm = (
         event.preventDefault();
         const req = { input1: title, input2: tag };
 
-        handlePatch(url, 'thread', Number(id), req)
+        handlePatch(url, '/thread', Number(id), req)
     }
 
     return (
@@ -54,8 +54,9 @@ export const EditThreadForm = (
             <select
                 value={tag}
                 onChange={(e) => setTag(e.target.value)}>
-                <option value="University Town">University Town</option>
-                <option value="School of Computing">School of Computing</option>
+                <option value="UT">University Town</option>
+                <option value="SoC">School of Computing</option>
+                <option value="FoS">Faculty of Science</option>
             </select>
             <button>Edit Blog</button>
         </form>

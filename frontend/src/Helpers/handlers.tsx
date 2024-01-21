@@ -1,7 +1,7 @@
 export const handleDelete = (url: string, type: string, id: number) => {
     if (window.confirm("Are you sure you want to delete this? All children content will be deleted as well.")) {
         fetch(
-            String.prototype.concat(url, type, '/', id.toString()), {
+            String.prototype.concat(url, '/user', type, '/', id.toString()), {
             method: 'DELETE',
             headers: {
                 "Content-Type": "application/json",
@@ -32,7 +32,7 @@ type patchRequest = {
 export const handlePatch = (url: string, type: string, id: number, data: patchRequest) => {
     if (window.confirm("Are you sure you want to edit this?")) {
         fetch(
-            String.prototype.concat(url, '/', type, '/', id.toString()), {
+            String.prototype.concat(url, '/user', type, '/', id.toString()), {
             method: 'PATCH',
             headers: {
                 "Content-Type": "application/json",

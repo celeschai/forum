@@ -10,7 +10,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// docker run --name forum -e POSTGRES_USER=forumadmin -e POSTGRES_PASSWORD=gossiping -e POSTGRES_DB=forum -p 5432:5432 -d postgres
+//docker run --name forum_local -e POSTGRES_USER=forumadmin -e POSTGRES_PASSWORD=gossiping -e POSTGRES_DB=forum_containerised -p5432:5432 -d postgres
 
 func NewPostgressStore() (*PostgresStore, error) {
 	env, err := godotenv.Read(".env")
@@ -671,7 +671,7 @@ func SeedData(s Database) {
 		log.Fatal(err)
 	}
 
-	t, err := NewThread(acc.UserName, "Best Korean Food", "University Town")
+	t, err := NewThread("Best Korean Food", acc.UserName, "University Town")
 	if err != nil {
 		log.Fatal(err)
 	}

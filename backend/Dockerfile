@@ -5,7 +5,7 @@ WORKDIR /backend
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY ./code Makefile .env ./
+COPY *.go Makefile .env ./
 
 EXPOSE 2000
 

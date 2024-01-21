@@ -8,7 +8,7 @@ export const EditComment = ({ url }: { url: string }) => {
   if (id == null) {
     throw Error("missing identity")
   }
-  const { data, isPending, error } = useFetch(url.concat('/comment/', id))
+  const { data, isPending, error } = useFetch(url.concat('/user/comment/', id))
   return (
     <div className="create">
       <h2>Edit Thread</h2>
@@ -34,7 +34,7 @@ export const EditCommentForm = (
     event.preventDefault();
     const req = { input1: comment, input2: null };
 
-    handlePatch(url, 'comment', Number(id), req)
+    handlePatch(url, '/comment', Number(id), req)
   }
 
   return (

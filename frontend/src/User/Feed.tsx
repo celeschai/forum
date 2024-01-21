@@ -15,8 +15,10 @@ const Feed = ({ url }: { url: string }) => {
                 <select value={tag}
                     onChange={(e) => setTag(e.target.value)}>
                     <option value="latest">Latest</option>
-                    <option value="University Town">University Town</option>
-                    <option value="School of Computing">School of Computing</option>
+                    <option value="UT">University Town</option>
+                    <option value="SoC">School of Computing</option>
+                    <option value="FoS">Faculty of Science</option>
+                    
                 </select>
             </div>
             {isPending && <div>Loading...</div>}

@@ -15,6 +15,7 @@ func (s *APIServer) Run() {
 	router := mux.NewRouter()
 
 	//authentication
+	router.HandleFunc("/health", makeHTTPHandleFunc(s.healthcheck))
 	router.HandleFunc("/home", makeHTTPHandleFunc(s.handleJWT))
 	router.HandleFunc("/login", makeHTTPHandleFunc(s.handleLogin))
 	router.HandleFunc("/signup", makeHTTPHandleFunc(s.handleSignup))
@@ -22,7 +23,7 @@ func (s *APIServer) Run() {
 
 	//CRUD
 	router.HandleFunc("/new/{type}", makeHTTPHandleFunc(s.handleCreateNew))
-	router.HandleFunc("/{type}/{id}", makeHTTPHandleFunc(s.handleUserContent))
+	router.HandleFunc("/user/{type}/{id}", makeHTTPHandleFunc(s.handleUserContent))
 
 	//user navigation
 	router.HandleFunc("/account", makeHTTPHandleFunc(s.handleAccount))
@@ -41,6 +42,10 @@ func (s *APIServer) Run() {
 	})
 	handler := c.Handler(router)
 	http.ListenAndServe(s.listenAddr, handler)
+}
+
+func (s *APIServer) healthcheck(w http.ResponseWriter, r *http.Request) error {
+	return WriteJSON(w, http.StatusOK, map[string]string{"status": "healthy"})
 }
 
 // authentication

@@ -1,17 +1,6 @@
 services:
-  nginx:
-    depends_on:
-      - frontend
-      - backend
-    restart: always # because it is routing traffic to our entire app
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
-    ports:
-      - '80:80'
-
   postgres:
-    container_name: forum/postgres
+    container_name: forum-psql
     image: "postgres"
     restart: always
     env_file:
@@ -26,19 +15,24 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - forum/postgres:/var/lib/postgresql/data
+      - forum-psql:/var/lib/postgresql/data
 
   frontend:
+    container_name: forum-frontend
+    image: forum-frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
       - ${HOST}:${FRONT_PORT}:${FRONT_PORT}
-    restart: on-failure
     stdin_open: true
-    command: npm start
+    volumes: 
+      - ./frontend:/app
+      - forum-node-modules:/app/node_modules
 
   backend:
+    container_name: forum-backend
+    image: forum-backend
     build:
       context:  ./backend
       dockerfile: Dockerfile
@@ -50,14 +44,13 @@ services:
           condition: service_healthy
     env_file:
       -  .env
-    # environment:
-    #   POSTGRES_USER: ${DB_USER}
-    #   POSTGRES_PASSWORD: ${DB_PASSWORD}
-    #   POSTGRES_DB: ${DB_NAME}
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     volumes:
-      - forum/backend:/backend
-    command: ./bin --seed true
-  
+      - forum-backend:/backend
+
   backup:
     container_name: forum-backup 
     image: "postgres"
@@ -65,12 +58,13 @@ services:
       postgres:
           condition: service_healthy
     volumes:
-      - ./backup:/backup
-    command: >
+      - forum-backup:/backup
+    command: > #routinely backs up and remove older files
       bash -c "while true; do
-        PGPASSWORD=$$POSTGRES_PASSWORD pg_dump -h db-postgresql -U $$POSTGRES_USER -Fc $$POSTGRES_DB > /backup/$$(date +%Y-%m-%d-%H-%M-%S).dump
+        PGPASSWORD=$$POSTGRES_PASSWORD pg_dump -h $$POSTGRES_HOST -U $$POSTGRES_USER -Fc $$POSTGRES_DB > /backup/$$(date +%Y-%m-%d-%H-%M-%S).dump
         echo ""Backup done at $$(date +%Y-%m-%d_%H:%M:%S)""
-        ls -1 /backup/*.dump | head -n -2 | xargs rm -f
+        ls -1 /backup/*.dump | head -n -2 | xargs volume rm -f
+        
         sleep 86400
       done"
     env_file:
@@ -79,10 +73,10 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
+      POSTGRES_HOST: ${DB_HOST}
 
 volumes:
-  forum/postgres:
-  forum/backend:
-
-
-      
+  forum-psql:
+  forum-backend:
+  forum-node-modules:
+  forum-backup:

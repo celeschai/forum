@@ -92,10 +92,10 @@ export const DisplayPosts = ({
                             <h5>
                                 {allowEdit && (
                                     <div className="edit">
-                                        <button onClick={() => handleDelete(url, "/thread", elem.id)}>
+                                        <button onClick={() => handleDelete(url, "/post", elem.id)}>
                                             🗑️
                                         </button>
-                                        <Link to={("/thread/").concat(String(elem.id))}>
+                                        <Link to={("/post/").concat(String(elem.id))}>
                                             <button> ✏️ </button>
                                         </Link>
                                     </div>
@@ -126,10 +126,10 @@ export const DisplayComments = ({
                             <h5>
                                 {allowEdit && (
                                     <div className="edit">
-                                        <button onClick={() => handleDelete(url, "/thread", elem.id)}>
+                                        <button onClick={() => handleDelete(url, "/comment", elem.id)}>
                                             🗑️
                                         </button>
-                                        <Link to={("/thread/").concat(String(elem.id))}>
+                                        <Link to={("/comment/").concat(String(elem.id))}>
                                             <button> ✏️ </button>
                                         </Link>
                                     </div>
