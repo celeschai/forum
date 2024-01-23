@@ -11,12 +11,13 @@ import Start from './User/Start';
 import { EditThread } from './Content/EditThread';
 import { EditPost } from './Content/EditPost';
 import { EditComment } from './Content/EditComment';
-
+/* for docker:
 const host: string = process.env.REACT_APP_HOST != null ? process.env.REACT_APP_HOST : "localhost"
 const serverport: string = process.env.REACT_APP_BACK_PORT != null ? process.env.REACT_APP_BACK_PORT : "3000"
 
 const hosturl: string = "http".concat("://", host, ":", serverport)
-
+*/
+const hosturl: string = "https://forum-backend-kmdz.onrender.com"
 
 function App() {
 
