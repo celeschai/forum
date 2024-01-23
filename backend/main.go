@@ -4,12 +4,8 @@ import (
 	"log"
 	"flag"
 	"fmt"
+	"os"
 )
-
-//enter port numbers
-const frontend = "3000"
-const backend = "2000"
-const host = "http://127.0.0.1"
 
 //command to seed database: ./bin/backend --seed true
 func main() {
@@ -31,7 +27,7 @@ func main() {
 		SeedData(data)
 	}
 
-	server := NewAPIServer(":" + backend, data)
+	server := NewAPIServer(":" + os.Getenv("BACK_PORT"), data)
 	server.Run()
 
 }
