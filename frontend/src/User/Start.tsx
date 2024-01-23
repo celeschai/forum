@@ -20,13 +20,14 @@ const Start = ({ url }: { url: string }) => {
                     throw Error('Something went wrong');
                 }
             })
-    }, [check, url])
+    }, [check])
 
 
     return (
         <div className="start">
             <h1>Welcome to Foodie Gossips!</h1>
             <p>Foodie Gossips is a forum for foodies to share their thoughts on campus dining.</p>
+            <br></br>
             <Button onClick={() => setCheck(true)}>Enter</Button>
         </div>
     );
