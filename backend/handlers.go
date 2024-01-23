@@ -9,7 +9,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
-	"os"
+	//"os" //uncomment if docker is used
 )
 
 func (s *APIServer) Run() {
@@ -33,7 +33,9 @@ func (s *APIServer) Run() {
 	log.Println("JSON API server running on port", s.listenAddr)
 
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://" + os.Getenv("HOST") + ":" + os.Getenv("FRONT_PORT") + "*"},
+	//the first CORS option is for hosting on docker
+		//AllowedOrigins:   []string{"http://" + os.Getenv("HOST") + ":" + os.Getenv("FRONT_PORT") + "*"},
+		AllowedOrigins:   []string{"https://forum-front-ynvw.onrender.com" + "*"},
 		AllowCredentials: true,
 		Debug:            false,
 		AllowedHeaders:   []string{"Content-Type", "Authorization", "X-Requested-With", "Cookies"},

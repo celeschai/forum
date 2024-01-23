@@ -1,3 +1,5 @@
+#only for docker
+
 services:
   postgres:
     container_name: forum-psql
