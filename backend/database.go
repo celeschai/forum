@@ -13,13 +13,15 @@ import (
 //to run locally: docker run --name forum_local -e POSTGRES_USER=forumadmin -e POSTGRES_PASSWORD=gossiping -e POSTGRES_DB=forum_containerised -p5432:5432 -d postgres
 
 func NewPostgressStore() (*PostgresStore, error) {
-	connStr :=
-		"user=" + os.Getenv("DB_USER") +
-			" host=" + os.Getenv("DB_HOST") + //remove this line to connect psql container from local machine
-			" dbname=" + os.Getenv("DB_NAME") +
-			" password=" + os.Getenv("DB_PASSWORD") +
-			" sslmode=" + os.Getenv("DB_SSL_MODE") +
-			" port=" + os.Getenv("DB_PORT")
+	connStr := "postgres://forumadmin:kPVRfUlsadKF1M4gPaloMmMsDgMd55jG@dpg-cmnujumn7f5s73d19bvg-a/forum_containerised"
+
+	// connStr :=
+	// 	"user=" + os.Getenv("DB_USER") +
+	// 		" host=" + os.Getenv("DB_HOST") + //remove this line (host) to connect psql without docker container from local machine
+	// 		" dbname=" + os.Getenv("DB_NAME") +
+	// 		" password=" + os.Getenv("DB_PASSWORD") +
+	// 		" sslmode=" + os.Getenv("DB_SSL_MODE") +
+	// 		" port=" + os.Getenv("DB_PORT")
 
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
