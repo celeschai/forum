@@ -18,7 +18,7 @@ services:
       - forum-psql:/var/lib/postgresql/data
 
   frontend:
-    platform: linux/arm64/v8
+    #platform: linux/amd64
     container_name: forum-frontend
     image: forum-frontend
     build:
@@ -35,7 +35,7 @@ services:
       - REACT_APP_BACK_PORT=${BACK_PORT}
 
   backend:
-    platform: linux/arm64/v8
+    #platform: linux/amd64
     container_name: forum-backend
     image: forum-backend
     build:
