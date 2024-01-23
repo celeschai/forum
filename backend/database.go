@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"os"
 
 	_ "github.com/lib/pq"
 )
