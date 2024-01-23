@@ -18,7 +18,7 @@ services:
       - forum-psql:/var/lib/postgresql/data
 
   frontend:
-    #platform: linux/amd64
+    #dockplatform: linux/amd64
     container_name: forum-frontend
     image: forum-frontend
     build:
