@@ -5,7 +5,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"net/http"
 	"golang.org/x/crypto/bcrypt"
-	"github.com/joho/godotenv"
+	"os"
 )
 
 func JWTAuth(w http.ResponseWriter, r *http.Request, s Database) error {
@@ -45,11 +45,7 @@ func JWTAuth(w http.ResponseWriter, r *http.Request, s Database) error {
 }
 
 func validateJWT(tokenString string) (*jwt.Token, error) { //validate jwt token then the secret key
-	env, err := godotenv.Read(".env")
-	if err != nil {
-		return nil, err
-	}
-	jwtSecret := env["JWT_SECRET"]
+	jwtSecret := os.Getenv("JWT_SECRET")
 
 	return jwt.Parse(
 		tokenString,
@@ -68,11 +64,7 @@ func createJWT(acc *Account) (string, error) {
 		"userCreated": acc.Created,
 	} //std jwt.Claim changes it to float64
 	
-	env, err := godotenv.Read(".env")
-	if err != nil {
-		return "", err
-	}
-	jwtSecret := env["JWT_SECRET"]
+	jwtSecret := os.Getenv("JWT_SECRET")
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
 	return token.SignedString([]byte(jwtSecret))

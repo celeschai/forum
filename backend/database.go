@@ -3,28 +3,23 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"github.com/joho/godotenv"
 	"log"
 	"strconv"
+	"os"
 
 	_ "github.com/lib/pq"
 )
 
-//docker run --name forum_local -e POSTGRES_USER=forumadmin -e POSTGRES_PASSWORD=gossiping -e POSTGRES_DB=forum_containerised -p5432:5432 -d postgres
+//to run locally: docker run --name forum_local -e POSTGRES_USER=forumadmin -e POSTGRES_PASSWORD=gossiping -e POSTGRES_DB=forum_containerised -p5432:5432 -d postgres
 
 func NewPostgressStore() (*PostgresStore, error) {
-	env, err := godotenv.Read(".env")
-	if err != nil {
-		return nil, err
-	}
-
 	connStr :=
-		"user=" + env["DB_USER"] +
-			" host=" + env["DB_HOST"] +
-			" dbname=" + env["DB_NAME"] +
-			" password=" + env["DB_PASSWORD"] +
-			" sslmode=" + env["DB_SSL_MODE"] +
-			" port=" + env["DB_PORT"]
+		"user=" + os.Getenv("DB_USER") +
+			" host=" + os.Getenv("DB_HOST") + //remove this line to connect psql container from local machine
+			" dbname=" + os.Getenv("DB_NAME") +
+			" password=" + os.Getenv("DB_PASSWORD") +
+			" sslmode=" + os.Getenv("DB_SSL_MODE") +
+			" port=" + os.Getenv("DB_PORT")
 
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {

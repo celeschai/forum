@@ -18,6 +18,7 @@ services:
       - forum-psql:/var/lib/postgresql/data
 
   frontend:
+    platform: linux/arm64/v8
     container_name: forum-frontend
     image: forum-frontend
     build:
@@ -29,8 +30,12 @@ services:
     volumes: 
       - ./frontend:/app
       - forum-node-modules:/app/node_modules
+    environment:
+      - REACT_APP_HOST=${HOST}
+      - REACT_APP_BACK_PORT=${BACK_PORT}
 
   backend:
+    platform: linux/arm64/v8
     container_name: forum-backend
     image: forum-backend
     build:
@@ -45,9 +50,16 @@ services:
     env_file:
       -  .env
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      HOST: ${HOST}
+      FRONT_PORT: ${FRONT_PORT}
+      BACK_PORT: ${BACK_PORT}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_SSL_MODE: ${DB_SSL_MODE}
+
     volumes:
       - forum-backend:/backend
 
