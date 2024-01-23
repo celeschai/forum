@@ -6,8 +6,7 @@ const Start = ({ url }: { url: string }) => {
     const [check, setCheck] = useState(false);
     useEffect(() => {
         fetch(url,
-            {
-                method: 'GET',
+            {   method: 'GET',
                 headers: { "Content-Type": "application/json" },
                 credentials: 'include',
             })
