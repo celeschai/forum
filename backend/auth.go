@@ -75,7 +75,7 @@ func setCookie(w http.ResponseWriter, r *http.Request, name, value string) {
 		Name:     name,
 		Value:    value,
 		MaxAge:   604800, //change to allow user to remain logged in 
-		HttpOnly: false, //true for local testing
+		HttpOnly: true, 
 		Secure:   true,
 		SameSite: http.SameSiteNoneMode,
 		Path: "/",
@@ -86,7 +86,12 @@ func setCookie(w http.ResponseWriter, r *http.Request, name, value string) {
 func deleteCookie(w http.ResponseWriter, name string) {
 	cookie := http.Cookie{
 		Name:     name,
-		MaxAge:   -1,
+		MaxAge:   -1, 
+		HttpOnly: true, 
+		Secure:   true,
+		SameSite: http.SameSiteNoneMode,
+		Path: "/",
+
 	}
 	http.SetCookie(w, &cookie)
 }
