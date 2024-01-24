@@ -22,9 +22,10 @@ const Start = ({ url }: { url: string }) => {
     return (
         <div className="start">
             <h1>Welcome to Foodie Gossips!</h1>
-            <p>Foodie Gossips is a forum for foodies to share their thoughts on campus dining.</p>
+            <h2>Foodie Gossips is a forum for foodies to share their thoughts on campus dining.</h2>
             <br></br>
             <Button onClick={handleclick}>Enter</Button>
+            <br></br>
             <br></br>
             <p>
                 This page is best viewed on a computer using Google Chrome.
