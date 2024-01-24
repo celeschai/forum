@@ -15,6 +15,8 @@ import (
 func (s *APIServer) Run() {
 	router := mux.NewRouter()
 
+	router.HandleFunc("/", makeHTTPHandleFunc(s.handlePing)) //keep Render up and running
+
 	//authentication
 	router.HandleFunc("/home", makeHTTPHandleFunc(s.handleJWT))
 	router.HandleFunc("/login", makeHTTPHandleFunc(s.handleLogin))
@@ -44,6 +46,10 @@ func (s *APIServer) Run() {
 	})
 	handler := c.Handler(router)
 	http.ListenAndServe(s.listenAddr, handler)
+}
+
+func (s *APIServer) handlePing(w http.ResponseWriter, r *http.Request) error {
+	return WriteJSON(w, http.StatusOK, "Pinged!")
 }
 
 // authentication
