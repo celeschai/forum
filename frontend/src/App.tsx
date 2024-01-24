@@ -17,7 +17,7 @@ const serverport: string = process.env.REACT_APP_BACK_PORT != null ? process.env
 
 const hosturl: string = "http".concat("://", host, ":", serverport)
 */
-const hosturl: string = "https://forum-backend-kmdz.onrender.com"
+const hosturl: string = "https://forum-back-armn.onrender.com"
 
 function App() {
 
