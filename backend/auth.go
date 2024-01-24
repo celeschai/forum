@@ -75,7 +75,7 @@ func setCookie(w http.ResponseWriter, r *http.Request, name, value string) {
 		Name:     name,
 		Value:    value,
 		MaxAge:   604800, //change to allow user to remain logged in 
-		HttpOnly: true, //true for local testing
+		HttpOnly: false, //true for local testing
 		Secure:   true,
 		SameSite: http.SameSiteNoneMode,
 		Path: "/",
