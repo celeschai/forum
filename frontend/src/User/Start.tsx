@@ -26,11 +26,13 @@ const Start = ({ url }: { url: string }) => {
             <br></br>
             <Button onClick={handleclick}>Enter</Button>
             <br></br>
-            <h2>
+            <p>
                 This page is best viewed on a computer using Google Chrome.
+            </p>
+            <p>
                 Please enable Third Party Cookies and include this site at https://forum-front-ynvw.onrender.com.
-                <a href = "https://github.com/celeschai/forum/blob/main/UserManual.pdf">user manual</a>
-            </h2>
+            </p>
+            <a href = "https://github.com/celeschai/forum/blob/main/UserManual.pdf">user manual</a>
         </div>
     );
 }
