@@ -15,19 +15,18 @@ The SignUp and SignIn pages have been implemented using [MUI](https://mui.com/ma
 
 ## Docker:
 This project is also designed to be run in docker containers. Environment variables that are set in `/.env` are passed into both `./frontend` and `./backend` via the `compose.yml` file under `environement variables`. Backup jobs are automically done and saved on your local machine every day. 
-# The file is configured for deployment on [Render](https://render.com/), should you wish to build your docker containers:
 
- 
+### The `main` branch is configured for deployment on [Render](https://render.com/), should you wish to build your docker containers, fork the `todocker` branch
 
-To start:
+ To start the forum using docker:
 ```
 docker compose up -d
 ```
 This will
-1. create docker images, containers, and volumes using `compose.yml`
+1. pull docker images, create containers and volumes using `compose.yml`
 2. seed the database 
 3. start the react frontend
-you can view your website on localhost:3000 
+you can view your website on `localhost:3000` 
 
 ## Spinning up the website with public docker images by me 
 visit this [repo](https://github.com/celeschai/forum_docker.git)
