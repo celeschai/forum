@@ -44,7 +44,8 @@ export const handlePatch = (url: string, type: string, id: number, data: patchRe
             if (resp.ok) {
                 window.location.href = "/account"
             } else if (resp.status === 401) {
-                throw Error("Log in to this account to perform this action")
+                //throw Error("Log in to this account to perform this action") //alternatively throw error
+                window.location.href = "/login"
             } else {
                 throw Error("error performing action")
             }
@@ -69,11 +70,11 @@ export const handlePost = (url: string, path: string, data: any, redir: string) 
                 if (response.status === 200) {
                     window.location.href = redir;
                 } else if (response.status === 401) {
-                    throw Error("Login required")
+                    //throw Error("Login required") //alternatively throw an error
+                    window.location.href = "/login"
                 } else {
                     console.log(stat.resp);
                     throw Error("Something went wrong")
                 }
-
             }))
 }

@@ -146,7 +146,7 @@ func (s *APIServer) handleCreateNew(w http.ResponseWriter, r *http.Request) erro
 
 	cookie, cookerr := r.Cookie("userName")
 	if cookerr != nil {
-		return WriteJSON(w, http.StatusInternalServerError, cookerr)
+		return WriteJSON(w, http.StatusUnauthorized, cookerr)
 	}
 
 	username := cookie.Value
@@ -235,7 +235,7 @@ func (s *APIServer) handleUserContent(w http.ResponseWriter, r *http.Request) er
 
 	userName, ckerr := r.Cookie("userName")
 	if ckerr != nil {
-		return WriteJSON(w, http.StatusInternalServerError, ckerr)
+		return WriteJSON(w, http.StatusUnauthorized, ckerr)
 	}
 
 	user := userName.Value
@@ -334,7 +334,7 @@ func (s *APIServer) handleAccount(w http.ResponseWriter, r *http.Request) error 
 
 	cookie, cookerr := r.Cookie("userName")
 	if cookerr != nil {
-		return WriteJSON(w, http.StatusInternalServerError, cookerr)
+		return WriteJSON(w, http.StatusUnauthorized, cookerr)
 	}
 	username := cookie.Value
 
@@ -348,10 +348,10 @@ func (s *APIServer) handleAccount(w http.ResponseWriter, r *http.Request) error 
 }
 
 func (s *APIServer) handleFeed(w http.ResponseWriter, r *http.Request) error {
-	err := JWTAuth(w, r, s.database)
-	if err != nil {
-		return WriteJSON(w, http.StatusUnauthorized, ServerResponse{Resp: "please log in again."})
-	}
+	//err := JWTAuth(w, r, s.database) //user not required to sign in to view feed
+	// if err != nil {
+	// 	return WriteJSON(w, http.StatusUnauthorized, ServerResponse{Resp: "please log in again."})
+	// }
 
 	if r.Method != "GET" {
 		return WriteJSON(w, http.StatusMethodNotAllowed, nil)
@@ -372,7 +372,7 @@ func (s *APIServer) handleGetParentChild(w http.ResponseWriter, r *http.Request)
 	}
 	cookie, cookerr := r.Cookie("userName")
 	if cookerr != nil {
-		return WriteJSON(w, http.StatusInternalServerError, cookerr)
+		return WriteJSON(w, http.StatusUnauthorized, cookerr)
 	}
 	user := cookie.Value
 
