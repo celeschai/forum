@@ -58,7 +58,7 @@ export const EditThreadForm = (
                 <option value="SoC">School of Computing</option>
                 <option value="FoS">Faculty of Science</option>
             </select>
-            <button>Edit Blog</button>
+            <button>Edit thread</button>
         </form>
     );
 }

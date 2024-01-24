@@ -13,7 +13,7 @@ export const EditPost = ({ url }: { url: string }) => {
     const { data, isPending, error } = useFetch(url.concat('/user/post/', id))
     return (
         <div className="create">
-            <h2>Edit Thread</h2>
+            <h2>Edit Post</h2>
             {isPending && <div>Loading...</div>}
             {error && <div>{error}</div>}
             {data && <EditCommentForm url={url} iniTitle={data["title"]} iniContent={data["content"]} id={id} />}
@@ -50,7 +50,7 @@ export const EditCommentForm = (
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
             />
-            <label>Body:</label>
+            <label>Post body:</label>
             <textarea
                 required
                 value={content}

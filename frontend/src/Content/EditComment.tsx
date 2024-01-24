@@ -11,7 +11,7 @@ export const EditComment = ({ url }: { url: string }) => {
   const { data, isPending, error } = useFetch(url.concat('/user/comment/', id))
   return (
     <div className="create">
-      <h2>Edit Thread</h2>
+      <h2>Edit Comment</h2>
       {isPending && <div>Loading...</div>}
       {error && <div>{error}</div>}
       {data && <EditCommentForm url={url} iniComment={data["content"]} id={id} />}
@@ -39,7 +39,7 @@ export const EditCommentForm = (
 
   return (
     <form onSubmit={handleSubmit}>
-      <label>Post title:</label>
+      <label>Comment body:</label>
       <textarea
         required
         value={comment}

@@ -223,7 +223,7 @@ button:hover {
 }
 
 .parent_pc {
-  flex: 60%;
+  flex: 40%;
   display: flex;
   flex-direction: column;
   align-items: center;
