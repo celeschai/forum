@@ -121,7 +121,7 @@ select:hover {
 }
 
 .start p {
-  color: var(--pastel-colour);
+  color: var(--complementary-colour);
 }
 
 /*list of threads*/

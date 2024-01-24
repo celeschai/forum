@@ -28,10 +28,14 @@ const Start = ({ url }: { url: string }) => {
             <br></br>
             <br></br>
             <p>
-                This page is best viewed on a computer using Google Chrome.
+                This page is works best on a computer using Google Chrome.
+            </p>
+            <br></br>
+            <p>
+                Please enable Third Party Cookies and include this site * https://forum-front-ynvw.onrender.com * in your browser's cookies allowed site list.
             </p>
             <p>
-                Please enable Third Party Cookies and include this site * https://forum-front-ynvw.onrender.com * in your browser's cookie whitelist.
+                On mobile devices, please disable block all cookies and allow cross site tracking.
             </p>
             <a href = "https://github.com/celeschai/forum/blob/main/UserManual.pdf">user manual</a>
         </div>
