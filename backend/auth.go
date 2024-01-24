@@ -79,7 +79,6 @@ func setCookie(w http.ResponseWriter, r *http.Request, name, value string) {
 		Secure:   true,
 		SameSite: http.SameSiteNoneMode,
 		Path: "/",
-		Domain: "forum-backend-kmdz.onrender.com",
 	}
 	http.SetCookie(w, &cookie)
 }
