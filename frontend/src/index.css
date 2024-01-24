@@ -116,12 +116,12 @@ select:hover {
 }
 
 .start a {
-  text-decoration: none;
+  margin: 1%;
   color: var(--highlight-colour);
 }
 
 .start p {
-  colour: var(--pastel-colour);
+  color: var(--pastel-colour);
 }
 
 /*list of threads*/
