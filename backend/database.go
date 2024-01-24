@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	//"os" //uncomment if docker is needed
+	"os" //uncomment if docker is needed
 
 	_ "github.com/lib/pq"
 )
@@ -14,9 +14,9 @@ import (
 
 func NewPostgressStore() (*PostgresStore, error) {
 //this connection string is used for deployment to Render 
-	connStr := "postgres://forumadmin:kPVRfUlsadKF1M4gPaloMmMsDgMd55jG@dpg-cmnujumn7f5s73d19bvg-a/forum_containerised"
+	//connStr := "postgres://forumadmin:kPVRfUlsadKF1M4gPaloMmMsDgMd55jG@dpg-cmnujumn7f5s73d19bvg-a/forum_containerised"
 
-/* this connection string is for connectiong to psql docker image
+//this connection string is for connectiong to psql docker image
 	connStr :=
 		"user=" + os.Getenv("DB_USER") +
 			" host=" + os.Getenv("DB_HOST") + //remove this line (host) to connect to psql container with local server
@@ -24,7 +24,7 @@ func NewPostgressStore() (*PostgresStore, error) {
 			" password=" + os.Getenv("DB_PASSWORD") +
 			" sslmode=" + os.Getenv("DB_SSL_MODE") +
 			" port=" + os.Getenv("DB_PORT")
-*/
+
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return nil, err

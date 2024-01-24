@@ -27,7 +27,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - ${HOST}:${FRONT_PORT}:${FRONT_PORT}
+      - ${PORT_HOST}:${FRONT_PORT}:${FRONT_PORT}
     stdin_open: true
     volumes: 
       - ./frontend:/app
@@ -44,7 +44,7 @@ services:
       context:  ./backend
       dockerfile: Dockerfile
     ports:
-      - ${HOST}:${BACK_PORT}:${BACK_PORT}
+      - ${PORT_HOST}:${BACK_PORT}:${BACK_PORT}
     restart: on-failure
     depends_on:
       postgres:
