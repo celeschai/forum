@@ -31,7 +31,7 @@ const Start = ({ url }: { url: string }) => {
                 This page is best viewed on a computer using Google Chrome.
             </p>
             <p>
-                Please enable Third Party Cookies and include this site at https://forum-front-ynvw.onrender.com.
+                Please enable Third Party Cookies and include this site * https://forum-front-ynvw.onrender.com * in your browser's cookie whitelist.
             </p>
             <a href = "https://github.com/celeschai/forum/blob/main/UserManual.pdf">user manual</a>
         </div>

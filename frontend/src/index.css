@@ -110,6 +110,20 @@ select:hover {
   color: var(--pastel-colour);
 }
 
+/*start page*/
+.start button{
+  font-family: 'Playfair Display';
+}
+
+.start a {
+  text-decoration: none;
+  color: var(--highlight-colour);
+}
+
+.start p {
+  colour: var(--pastel-colour);
+}
+
 /*list of threads*/
 .list {
   display: flex;
