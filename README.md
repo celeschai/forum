@@ -14,19 +14,20 @@ Users can only edit and delete content they create, if they attempt to do so on 
 The SignUp and SignIn pages have been implemented using [MUI](https://mui.com/material-ui/getting-started/templates/). Changes to the MUI template theme can be made in `/frontend/src/SignIn.tsx`. To facilitate my own learning, I styled the rest of the pages with CSS. CSS offers more customisation, you can make your own changes in `/frontend/src/index.css`.
 
 ## Docker:
-This project is also designed to be run in docker containers. Environment variables that are set in `/.env` overwrites and thus syncs with `/frontend/.env` and `/backend/.env`. A script `writeenv.sh` prefixes the variables with REACT_APP_ to be read by the frontend React app. Backup jobs are automically done and saved on your local machine every day. 
+This project is also designed to be run in docker containers. Environment variables that are set in `/.env` are passed into both `./frontend` and `./backend` via the `compose.yml` file under `environement variables`. Backup jobs are automically done and saved on your local machine every day. 
+# The file is configured for deployment on [Render](https://render.com/), should you wish to build your docker containers:
+
+ 
 
 To start:
 ```
-chmod +x run.sh
+docker compose up -d
 ```
-mark the script file as executable, then
+This will
+1. create docker images, containers, and volumes using `compose.yml`
+2. seed the database 
+3. start the react frontend
+you can view your website on localhost:3000 
 
-```
-./run.sh
-```
-run the `./run.sh` script file and the following are executed: 
-1. executes the `writeenv.sh` script
-2. create docker images, containers, and volumes using `compose.yml`
-3. seed the database 
-4. start the react frontend
+## Spinning up the website with public docker images by me 
+visit this [repo](https://github.com/celeschai/forum_docker.git)
