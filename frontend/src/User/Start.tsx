@@ -25,6 +25,12 @@ const Start = ({ url }: { url: string }) => {
             <p>Foodie Gossips is a forum for foodies to share their thoughts on campus dining.</p>
             <br></br>
             <Button onClick={handleclick}>Enter</Button>
+            <br></br>
+            <h2>
+                This page is best viewed on a computer using Google Chrome.
+                Please enable Third Party Cookies and include this site at https://forum-front-ynvw.onrender.com.
+                <a href = "https://github.com/celeschai/forum/blob/main/UserManual.pdf">user manual</a>
+            </h2>
         </div>
     );
 }
